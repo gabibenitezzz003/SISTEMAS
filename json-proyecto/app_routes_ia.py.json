@@ -1,0 +1,234 @@
+{
+    "archivo": "ia.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\routes\\ia.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import jsonify, request\nfrom app.routes import ia_bp\nfrom app.models import DiasNoHabiles, Asesores\nfrom sqlalchemy import func\nfrom datetime import datetime, timedelta\nimport pandas as pd\n\n@ia_bp.route('/query', methods=['POST'])\ndef process_query():\n    data = request.json\n    query = data.get('query', '').lower()\n    \n    # Procesamiento básico de consultas naturales\n    if 'cuantos asesores' in query:\n        if 'com' in query:\n            count = Asesores.query.filter_by(skill='COM').count()\n            return jsonify({\n                'answer': f'Hay {count} asesores COM actualmente.',\n                'type': 'count'\n            })\n        elif 'cross' in query:\n            count = Asesores.query.filter_by(skill='CROSS').count()\n            return jsonify({\n                'answer': f'Hay {count} asesores CROSS actualmente.',\n                'type': 'count'\n            })\n    \n    elif 'turnos' in query and ('hoy' in query or 'fecha' in query):\n        date = data.get('date', datetime.now().date())\n        shifts = DiasNoHabiles.query.filter_by(fecha=date).all()\n        return jsonify({\n            'answer': f'Hay {len(shifts)} turnos programados para esa fecha.',\n            'details': [{'nombre': s.nombre, 'horario': s.horario} for s in shifts],\n            'type': 'shifts'\n        })\n\n    return jsonify({\n        'answer': 'Lo siento, no pude entender tu consulta.',\n        'type': 'error'\n    })\n\n@ia_bp.route('/analytics', methods=['GET'])\ndef get_ia_analytics():\n    # Análisis predictivo de turnos\n    today = datetime.now().date()\n    last_month = today - timedelta(days=30)\n    \n    historical_data = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha >= last_month\n    ).all()\n    \n    # Convertir a DataFrame para análisis\n    df = pd.DataFrame([{\n        'fecha': h.fecha,\n        'skill': h.skill,\n        'tipo_dia': h.tipo_dia,\n        'horario': h.horario\n    } for h in historical_data])\n    \n    # Análisis básico\n    analysis = {\n        'total_turnos': len(df),\n        'distribucion_skill': df['skill'].value_counts().to_dict(),\n        'dias_mas_frecuentes': df['tipo_dia'].value_counts().to_dict(),\n        'horarios_comunes': df['horario'].value_counts().head(3).to_dict()\n    }\n    \n    return jsonify(analysis)\n\n@ia_bp.route('/predict/attendance', methods=['GET'])\ndef predict_attendance():\n    # Predicción simple basada en históricos\n    date_str = request.args.get('date')\n    if date_str:\n        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()\n        weekday = target_date.weekday()\n        \n        # Obtener promedio histórico para ese día de la semana\n        historical = DiasNoHabiles.query.filter(\n            func.extract('dow', DiasNoHabiles.fecha) == weekday\n        ).all()\n        \n        attendance_prediction = len(historical) / max(1, len(set(h.fecha for h in historical)))\n        \n        return jsonify({\n            'date': date_str,\n            'predicted_attendance': round(attendance_prediction, 2),\n            'confidence': 0.85  # Valor ejemplo\n        })\n    \n    return jsonify({'error': 'Se requiere una fecha'}), 400 ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "jsonify",
+                    "asname": null
+                },
+                {
+                    "name": "request",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.routes",
+            "level": 0,
+            "names": [
+                {
+                    "name": "ia_bp",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "DiasNoHabiles",
+                    "asname": null
+                },
+                {
+                    "name": "Asesores",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "func",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 6
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "process_query",
+            "lineno": 9,
+            "docstring": null,
+            "decoradores": [
+                "ia_bp.route('/query', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_ia_analytics",
+            "lineno": 43,
+            "docstring": null,
+            "decoradores": [
+                "ia_bp.route('/analytics', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "predict_attendance",
+            "lineno": 71,
+            "docstring": null,
+            "decoradores": [
+                "ia_bp.route('/predict/attendance', methods=['GET'])"
+            ],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 10,
+            "targets": [
+                "data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "query"
+            ],
+            "value": "data.get('query', '').lower()"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "count"
+            ],
+            "value": "Asesores.query.filter_by(skill='COM').count()"
+        },
+        {
+            "lineno": 22,
+            "targets": [
+                "count"
+            ],
+            "value": "Asesores.query.filter_by(skill='CROSS').count()"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "date"
+            ],
+            "value": "data.get('date', datetime.now().date())"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "shifts"
+            ],
+            "value": "DiasNoHabiles.query.filter_by(fecha=date).all()"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 46,
+            "targets": [
+                "last_month"
+            ],
+            "value": "today - timedelta(days=30)"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "historical_data"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha >= last_month).all()"
+        },
+        {
+            "lineno": 53,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.DataFrame([{'fecha': h.fecha, 'skill': h.skill, 'tipo_dia': h.tipo_dia, 'horario': h.horario} for h in historical_data])"
+        },
+        {
+            "lineno": 61,
+            "targets": [
+                "analysis"
+            ],
+            "value": "{'total_turnos': len(df), 'distribucion_skill': df['skill'].value_counts().to_dict(), 'dias_mas_frecuentes': df['tipo_dia'].value_counts().to_dict(), 'horarios_comunes': df['horario'].value_counts().head(3).to_dict()}"
+        },
+        {
+            "lineno": 73,
+            "targets": [
+                "date_str"
+            ],
+            "value": "request.args.get('date')"
+        },
+        {
+            "lineno": 75,
+            "targets": [
+                "target_date"
+            ],
+            "value": "datetime.strptime(date_str, '%Y-%m-%d').date()"
+        },
+        {
+            "lineno": 76,
+            "targets": [
+                "weekday"
+            ],
+            "value": "target_date.weekday()"
+        },
+        {
+            "lineno": 79,
+            "targets": [
+                "historical"
+            ],
+            "value": "DiasNoHabiles.query.filter(func.extract('dow', DiasNoHabiles.fecha) == weekday).all()"
+        },
+        {
+            "lineno": 83,
+            "targets": [
+                "attendance_prediction"
+            ],
+            "value": "len(historical) / max(1, len(set((h.fecha for h in historical))))"
+        }
+    ]
+}

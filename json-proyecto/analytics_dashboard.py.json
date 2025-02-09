@@ -1,0 +1,451 @@
+{
+    "archivo": "analytics_dashboard.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\analytics_dashboard.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime, timedelta\nfrom random import random\nimport pandas as pd\nimport plotly.graph_objects as go\nfrom models import CompanyMetrics, MarketData, SalesData\n\nclass TelecomBI:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.companies = ['Movistar', 'Personal', 'Claro']\n        self.provincias = [\n            'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba',\n            'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja',\n            'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan',\n            'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero',\n            'Tierra del Fuego', 'Tucumán'\n        ]\n        \n    def get_market_metrics(self):\n        \"\"\"Obtiene métricas principales del mercado\"\"\"\n        return {\n            \"market_share\": self.calculate_market_share(),\n            \"price_comparison\": self.analyze_price_trends(),\n            \"customer_satisfaction\": self.get_satisfaction_metrics(),\n            \"revenue_growth\": self.calculate_revenue_growth()\n        }\n\n    def create_dashboard_layout(self):\n        \"\"\"Crea el layout del dashboard de BI enfocado en análisis provincial\"\"\"\n        return {\n            \"title\": \"Business Intelligence - Análisis Provincial Movistar\",\n            \"sections\": [\n                {\n                    \"name\": \"Indicadores Provinciales\",\n                    \"charts\": [\n                        {\n                            \"type\": \"choropleth\",\n                            \"title\": \"Mapa de Cobertura por Provincia\",\n                            \"data\": self.coverage_map()\n                        },\n                        {\n                            \"type\": \"bar\",\n                            \"title\": \"Participación de Mercado por Provincia\",\n                            \"data\": self.market_share_by_province()\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"Análisis Competitivo Provincial\",\n                    \"charts\": [\n                        {\n                            \"type\": \"heatmap\",\n                            \"title\": \"Satisfacción del Cliente por Provincia\",\n                            \"data\": self.satisfaction_heatmap()\n                        },\n                        {\n                            \"type\": \"line\",\n                            \"title\": \"Evolución de Clientes por Provincia\",\n                            \"data\": self.customer_evolution()\n                        }\n                    ]\n                }\n            ]\n        }\n\n    def coverage_map(self):\n        \"\"\"Genera mapa de Argentina con datos de cobertura por provincia\"\"\"\n        return go.Figure(data=go.Choropleth(\n            locations=self.provincias,\n            z=self.get_coverage_by_province(),\n            locationmode='country names',\n            colorscale='Viridis',\n            colorbar_title=\"% Cobertura\"\n        ))\n\n    def market_share_by_province(self):\n        \"\"\"Análisis de participación de mercado por provincia\"\"\"\n        return go.Figure(data=[\n            go.Bar(\n                name=company,\n                x=self.provincias,\n                y=self.get_market_share_data(company)\n            ) for company in self.companies\n        ])\n\n    def satisfaction_heatmap(self):\n        \"\"\"Mapa de calor de satisfacción del cliente por provincia\"\"\"\n        return go.Figure(data=go.Heatmap(\n            z=self.get_satisfaction_by_province(),\n            x=self.companies,\n            y=self.provincias,\n            colorscale='RdYlGn'\n        ))\n\n    def customer_evolution(self):\n        \"\"\"Evolución temporal de clientes por provincia\"\"\"\n        return go.Figure(data=[\n            go.Scatter(\n                name=provincia,\n                x=self.get_date_range(),\n                y=self.get_customer_data(provincia)\n            ) for provincia in self.provincias\n        ])\n\n    def get_coverage_by_province(self):\n        \"\"\"Obtiene datos de cobertura por provincia desde la base de datos\"\"\"\n        try:\n            # Implementar consulta a la base de datos\n            coverage_data = self.session.query(\n                CompanyMetrics.coverage\n            ).filter_by(company='Movistar').all()\n            return [data[0] for data in coverage_data]\n        except Exception as e:\n            print(f\"Error al obtener datos de cobertura: {e}\")\n            return [0] * len(self.provincias)\n\n    def get_market_share_data(self, company):\n        \"\"\"Obtiene datos de participación de mercado por provincia\"\"\"\n        try:\n            # Implementar consulta a la base de datos\n            market_data = self.session.query(\n                MarketData.market_share\n            ).filter_by(company=company).all()\n            return [data[0] for data in market_data]\n        except Exception as e:\n            print(f\"Error al obtener datos de mercado: {e}\")\n            return [0] * len(self.provincias)\n\n    def get_satisfaction_by_province(self):\n        \"\"\"Obtiene datos de satisfacción por provincia\"\"\"\n        try:\n            # Implementar consulta a la base de datos\n            satisfaction_data = self.session.query(\n                CompanyMetrics.satisfaction_score\n            ).filter_by(company='Movistar').all()\n            return [[data[0] for data in satisfaction_data]]\n        except Exception as e:\n            print(f\"Error al obtener datos de satisfacción: {e}\")\n            return [[0] * len(self.companies) for _ in self.provincias]\n\n    def get_customer_data(self, provincia):\n        \"\"\"Obtiene evolución de clientes por provincia\"\"\"\n        try:\n            # Implementar consulta a la base de datos\n            customer_data = self.session.query(\n                SalesData.customer_count\n            ).filter_by(\n                company='Movistar',\n                province=provincia\n            ).all()\n            return [data[0] for data in customer_data]\n        except Exception as e:\n            print(f\"Error al obtener datos de clientes: {e}\")\n            return [0] * 12\n\n    def get_date_range(self):\n        \"\"\"Obtiene rango de fechas para análisis\"\"\"\n        end_date = datetime.now()\n        start_date = end_date - timedelta(days=365)\n        return pd.date_range(start=start_date, end=end_date, freq='M')\n\n    def get_price_data(self, company):\n        \"\"\"Obtiene datos históricos de precios\"\"\"\n        # Implementar lógica real de obtención de datos\n        return [random.uniform(2000, 5000) for _ in range(12)]\n\n    def get_satisfaction_scores(self):\n        \"\"\"Obtiene puntuaciones de satisfacción\"\"\"\n        # Implementar lógica real\n        return [92, 87, 85, 78]\n\n    def get_service_metrics(self, company):\n        \"\"\"Obtiene métricas de servicio por empresa\"\"\"\n        # Implementar lógica real\n        return [random.uniform(60, 95) for _ in range(5)]\n\n    def get_coverage_data(self):\n        \"\"\"Obtiene datos de cobertura por región\"\"\"\n        # Implementar lógica real\n        return [[random.uniform(70, 100) for _ in range(4)] for _ in range(6)] ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "random",
+            "level": 0,
+            "names": [
+                {
+                    "name": "random",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "plotly.graph_objects",
+                    "asname": "go"
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "CompanyMetrics",
+                    "asname": null
+                },
+                {
+                    "name": "MarketData",
+                    "asname": null
+                },
+                {
+                    "name": "SalesData",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "TelecomBI",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 8,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "get_market_metrics",
+                    "lineno": 19,
+                    "docstring": "Obtiene métricas principales del mercado",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "create_dashboard_layout",
+                    "lineno": 28,
+                    "docstring": "Crea el layout del dashboard de BI enfocado en análisis provincial",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "coverage_map",
+                    "lineno": 66,
+                    "docstring": "Genera mapa de Argentina con datos de cobertura por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "market_share_by_province",
+                    "lineno": 76,
+                    "docstring": "Análisis de participación de mercado por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "satisfaction_heatmap",
+                    "lineno": 86,
+                    "docstring": "Mapa de calor de satisfacción del cliente por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "customer_evolution",
+                    "lineno": 95,
+                    "docstring": "Evolución temporal de clientes por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_coverage_by_province",
+                    "lineno": 105,
+                    "docstring": "Obtiene datos de cobertura por provincia desde la base de datos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_market_share_data",
+                    "lineno": 117,
+                    "docstring": "Obtiene datos de participación de mercado por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "company"
+                    ]
+                },
+                {
+                    "nombre": "get_satisfaction_by_province",
+                    "lineno": 129,
+                    "docstring": "Obtiene datos de satisfacción por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_customer_data",
+                    "lineno": 141,
+                    "docstring": "Obtiene evolución de clientes por provincia",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "provincia"
+                    ]
+                },
+                {
+                    "nombre": "get_date_range",
+                    "lineno": 156,
+                    "docstring": "Obtiene rango de fechas para análisis",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_price_data",
+                    "lineno": 162,
+                    "docstring": "Obtiene datos históricos de precios",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "company"
+                    ]
+                },
+                {
+                    "nombre": "get_satisfaction_scores",
+                    "lineno": 167,
+                    "docstring": "Obtiene puntuaciones de satisfacción",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_service_metrics",
+                    "lineno": 172,
+                    "docstring": "Obtiene métricas de servicio por empresa",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "company"
+                    ]
+                },
+                {
+                    "nombre": "get_coverage_data",
+                    "lineno": 177,
+                    "docstring": "Obtiene datos de cobertura por región",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "get_market_metrics",
+            "lineno": 19,
+            "docstring": "Obtiene métricas principales del mercado",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "create_dashboard_layout",
+            "lineno": 28,
+            "docstring": "Crea el layout del dashboard de BI enfocado en análisis provincial",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "coverage_map",
+            "lineno": 66,
+            "docstring": "Genera mapa de Argentina con datos de cobertura por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "market_share_by_province",
+            "lineno": 76,
+            "docstring": "Análisis de participación de mercado por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "satisfaction_heatmap",
+            "lineno": 86,
+            "docstring": "Mapa de calor de satisfacción del cliente por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "customer_evolution",
+            "lineno": 95,
+            "docstring": "Evolución temporal de clientes por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_coverage_by_province",
+            "lineno": 105,
+            "docstring": "Obtiene datos de cobertura por provincia desde la base de datos",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_market_share_data",
+            "lineno": 117,
+            "docstring": "Obtiene datos de participación de mercado por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "company"
+            ]
+        },
+        {
+            "nombre": "get_satisfaction_by_province",
+            "lineno": 129,
+            "docstring": "Obtiene datos de satisfacción por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_customer_data",
+            "lineno": 141,
+            "docstring": "Obtiene evolución de clientes por provincia",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "provincia"
+            ]
+        },
+        {
+            "nombre": "get_date_range",
+            "lineno": 156,
+            "docstring": "Obtiene rango de fechas para análisis",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_price_data",
+            "lineno": 162,
+            "docstring": "Obtiene datos históricos de precios",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "company"
+            ]
+        },
+        {
+            "nombre": "get_satisfaction_scores",
+            "lineno": 167,
+            "docstring": "Obtiene puntuaciones de satisfacción",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_service_metrics",
+            "lineno": 172,
+            "docstring": "Obtiene métricas de servicio por empresa",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "company"
+            ]
+        },
+        {
+            "nombre": "get_coverage_data",
+            "lineno": 177,
+            "docstring": "Obtiene datos de cobertura por región",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 9,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "self.companies"
+            ],
+            "value": "['Movistar', 'Personal', 'Claro']"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "self.provincias"
+            ],
+            "value": "['Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucumán']"
+        },
+        {
+            "lineno": 109,
+            "targets": [
+                "coverage_data"
+            ],
+            "value": "self.session.query(CompanyMetrics.coverage).filter_by(company='Movistar').all()"
+        },
+        {
+            "lineno": 121,
+            "targets": [
+                "market_data"
+            ],
+            "value": "self.session.query(MarketData.market_share).filter_by(company=company).all()"
+        },
+        {
+            "lineno": 133,
+            "targets": [
+                "satisfaction_data"
+            ],
+            "value": "self.session.query(CompanyMetrics.satisfaction_score).filter_by(company='Movistar').all()"
+        },
+        {
+            "lineno": 145,
+            "targets": [
+                "customer_data"
+            ],
+            "value": "self.session.query(SalesData.customer_count).filter_by(company='Movistar', province=provincia).all()"
+        },
+        {
+            "lineno": 158,
+            "targets": [
+                "end_date"
+            ],
+            "value": "datetime.now()"
+        },
+        {
+            "lineno": 159,
+            "targets": [
+                "start_date"
+            ],
+            "value": "end_date - timedelta(days=365)"
+        }
+    ]
+}

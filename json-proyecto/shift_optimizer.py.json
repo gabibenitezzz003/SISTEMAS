@@ -1,0 +1,182 @@
+{
+    "archivo": "shift_optimizer.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\shift_optimizer.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from ortools.sat.python import cp_model\nimport pandas as pd\n\nclass ShiftOptimizer:\n    def __init__(self, db_session):\n        self.session = db_session\n        \n    def optimize_shifts(self, month, year):\n        \"\"\"Optimiza la asignación de turnos\"\"\"\n        # Obtener datos necesarios\n        employees = self.get_available_employees()\n        shifts = self.get_required_shifts(month, year)\n        \n        # Crear modelo de optimización\n        model = cp_model.CpModel()\n        \n        # Variables de decisión\n        assignments = {}\n        for employee in employees:\n            for shift in shifts:\n                assignments[(employee.id, shift['id'])] = model.NewBoolVar(\n                    f'assignment_e{employee.id}_s{shift[\"id\"]}'\n                )\n        \n        # Restricciones\n        self.add_constraints(model, assignments, employees, shifts)\n        \n        # Resolver\n        solver = cp_model.CpSolver()\n        status = solver.Solve(model)\n        \n        if status == cp_model.OPTIMAL:\n            return self.process_solution(solver, assignments, employees, shifts)\n        else:\n            return None\n            \n    def add_constraints(self, model, assignments, employees, shifts):\n        \"\"\"Agrega restricciones al modelo\"\"\"\n        # Cada turno debe tener exactamente un empleado\n        for shift in shifts:\n            model.Add(\n                sum(assignments[(e.id, shift['id'])] for e in employees) == 1\n            )\n            \n        # Cada empleado debe tener al menos un día libre por semana\n        for employee in employees:\n            for week in range(4):  # Para cada semana del mes\n                week_shifts = [s for s in shifts if s['week'] == week]\n                model.Add(\n                    sum(assignments[(employee.id, s['id'])] for s in week_shifts) <= 5\n                )\n                \n        # No más de 3 turnos nocturnos consecutivos\n        for employee in employees:\n            night_shifts = [s for s in shifts if s['type'] == 'night']\n            for i in range(len(night_shifts) - 2):\n                model.Add(\n                    sum(assignments[(employee.id, night_shifts[j]['id'])] \n                        for j in range(i, i + 3)) <= 2\n                ) ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "ortools.sat.python",
+            "level": 0,
+            "names": [
+                {
+                    "name": "cp_model",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 2
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "ShiftOptimizer",
+            "lineno": 4,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 5,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "optimize_shifts",
+                    "lineno": 8,
+                    "docstring": "Optimiza la asignación de turnos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "month",
+                        "year"
+                    ]
+                },
+                {
+                    "nombre": "add_constraints",
+                    "lineno": 37,
+                    "docstring": "Agrega restricciones al modelo",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "model",
+                        "assignments",
+                        "employees",
+                        "shifts"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 5,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "optimize_shifts",
+            "lineno": 8,
+            "docstring": "Optimiza la asignación de turnos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "month",
+                "year"
+            ]
+        },
+        {
+            "nombre": "add_constraints",
+            "lineno": 37,
+            "docstring": "Agrega restricciones al modelo",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "model",
+                "assignments",
+                "employees",
+                "shifts"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "employees"
+            ],
+            "value": "self.get_available_employees()"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "shifts"
+            ],
+            "value": "self.get_required_shifts(month, year)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "model"
+            ],
+            "value": "cp_model.CpModel()"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "assignments"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "assignments[employee.id, shift['id']]"
+            ],
+            "value": "model.NewBoolVar(f'assignment_e{employee.id}_s{shift['id']}')"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "solver"
+            ],
+            "value": "cp_model.CpSolver()"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "status"
+            ],
+            "value": "solver.Solve(model)"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "week_shifts"
+            ],
+            "value": "[s for s in shifts if s['week'] == week]"
+        },
+        {
+            "lineno": 55,
+            "targets": [
+                "night_shifts"
+            ],
+            "value": "[s for s in shifts if s['type'] == 'night']"
+        }
+    ]
+}

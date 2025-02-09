@@ -1,0 +1,250 @@
+{
+    "archivo": "ml_engine.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\ml_engine.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier\nfrom sklearn.preprocessing import StandardScaler\nimport numpy as np\nimport pandas as pd\nfrom datetime import datetime, timedelta\n\nclass MLEngine:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.models = {\n            'hours_predictor': None,\n            'efficiency_predictor': None,\n            'anomaly_detector': None,\n            'pattern_recognizer': None\n        }\n        self.scalers = {}\n        \n    def train_all_models(self, historical_data):\n        \"\"\"Entrena todos los modelos del sistema\"\"\"\n        # Preparar datos\n        X, y = self.prepare_training_data(historical_data)\n        \n        # Modelo de predicción de horas\n        self.models['hours_predictor'] = self.train_hours_predictor(X, y['hours'])\n        \n        # Modelo de eficiencia\n        self.models['efficiency_predictor'] = self.train_efficiency_predictor(X, y['efficiency'])\n        \n        # Detector de anomalías\n        self.models['anomaly_detector'] = self.train_anomaly_detector(X)\n        \n        # Reconocedor de patrones\n        self.models['pattern_recognizer'] = self.train_pattern_recognizer(X, y['patterns'])\n        \n    def detect_patterns(self, data):\n        \"\"\"Detecta patrones en los datos históricos\"\"\"\n        patterns = {\n            'seasonal_trends': self.analyze_seasonality(data),\n            'peak_hours': self.find_peak_hours(data),\n            'employee_preferences': self.analyze_employee_preferences(data),\n            'efficiency_factors': self.identify_efficiency_factors(data)\n        }\n        return patterns\n        \n    def predict_future_needs(self, horizon_days=30):\n        \"\"\"Predice necesidades futuras de personal\"\"\"\n        predictions = {\n            'staff_needed': [],\n            'expected_workload': [],\n            'optimal_shifts': [],\n            'risk_factors': []\n        }\n        \n        for day in range(horizon_days):\n            date = datetime.now() + timedelta(days=day)\n            features = self.prepare_prediction_features(date)\n            \n            predictions['staff_needed'].append(\n                self.predict_staff_needs(features)\n            )\n            predictions['expected_workload'].append(\n                self.predict_workload(features)\n            )\n            predictions['optimal_shifts'].append(\n                self.optimize_shift_distribution(features)\n            )\n            predictions['risk_factors'].append(\n                self.assess_risk_factors(features)\n            )\n            \n        return predictions ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "sklearn.ensemble",
+            "level": 0,
+            "names": [
+                {
+                    "name": "RandomForestRegressor",
+                    "asname": null
+                },
+                {
+                    "name": "GradientBoostingClassifier",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "sklearn.preprocessing",
+            "level": 0,
+            "names": [
+                {
+                    "name": "StandardScaler",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "numpy",
+                    "asname": "np"
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "MLEngine",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 8,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "train_all_models",
+                    "lineno": 18,
+                    "docstring": "Entrena todos los modelos del sistema",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "historical_data"
+                    ]
+                },
+                {
+                    "nombre": "detect_patterns",
+                    "lineno": 35,
+                    "docstring": "Detecta patrones en los datos históricos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "data"
+                    ]
+                },
+                {
+                    "nombre": "predict_future_needs",
+                    "lineno": 45,
+                    "docstring": "Predice necesidades futuras de personal",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "horizon_days"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "train_all_models",
+            "lineno": 18,
+            "docstring": "Entrena todos los modelos del sistema",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "historical_data"
+            ]
+        },
+        {
+            "nombre": "detect_patterns",
+            "lineno": 35,
+            "docstring": "Detecta patrones en los datos históricos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "data"
+            ]
+        },
+        {
+            "nombre": "predict_future_needs",
+            "lineno": 45,
+            "docstring": "Predice necesidades futuras de personal",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "horizon_days"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 9,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "self.models"
+            ],
+            "value": "{'hours_predictor': None, 'efficiency_predictor': None, 'anomaly_detector': None, 'pattern_recognizer': None}"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "self.scalers"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "(X, y)"
+            ],
+            "value": "self.prepare_training_data(historical_data)"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "self.models['hours_predictor']"
+            ],
+            "value": "self.train_hours_predictor(X, y['hours'])"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "self.models['efficiency_predictor']"
+            ],
+            "value": "self.train_efficiency_predictor(X, y['efficiency'])"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "self.models['anomaly_detector']"
+            ],
+            "value": "self.train_anomaly_detector(X)"
+        },
+        {
+            "lineno": 33,
+            "targets": [
+                "self.models['pattern_recognizer']"
+            ],
+            "value": "self.train_pattern_recognizer(X, y['patterns'])"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "patterns"
+            ],
+            "value": "{'seasonal_trends': self.analyze_seasonality(data), 'peak_hours': self.find_peak_hours(data), 'employee_preferences': self.analyze_employee_preferences(data), 'efficiency_factors': self.identify_efficiency_factors(data)}"
+        },
+        {
+            "lineno": 47,
+            "targets": [
+                "predictions"
+            ],
+            "value": "{'staff_needed': [], 'expected_workload': [], 'optimal_shifts': [], 'risk_factors': []}"
+        },
+        {
+            "lineno": 55,
+            "targets": [
+                "date"
+            ],
+            "value": "datetime.now() + timedelta(days=day)"
+        },
+        {
+            "lineno": 56,
+            "targets": [
+                "features"
+            ],
+            "value": "self.prepare_prediction_features(date)"
+        }
+    ]
+}

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - GTR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary-color: #00f2ff;
+            --secondary-color: #00142F;
+            --accent-color: #019df4;
+            --success-color: #00d084;
+            --warning-color: #ffd700;
+            --danger-color: #ff4b4b;
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--secondary-color), #001f4d);
+            color: var(--text-color);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .time-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-filters button {
+            background: var(--card-bg);
+            border: none;
+            color: var(--text-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-filters button.active {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .circle-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+        }
+
+        .circle-progress svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-progress circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .circle-progress .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .circle-progress .progress {
+            stroke: var(--primary-color);
+            transition: stroke-dashoffset 0.8s ease;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header" data-aos="fade-down">
+            <h1><i class="mdi mdi-view-dashboard"></i> Dashboard - GTR</h1>
+            
+            <div class="time-filters">
+                <button class="active">Hoy</button>
+                <button>Semana</button>
+                <button>Mes</button>
+            </div>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-card" data-aos="zoom-in" data-aos-delay="100">
+                <div class="circle-progress" id="asesoresKPI">
+                    <svg viewBox="0 0 120 120">
+                        <circle class="bg" cx="60" cy="60" r="54"/>
+                        <circle class="progress" cx="60" cy="60" r="54"/>
+                    </svg>
+                    <div class="value">500</div>
+                </div>
+                <h3>Total Asesores</h3>
+            </div>
+
+            <div class="kpi-card" data-aos="zoom-in" data-aos-delay="200">
+                <div class="circle-progress" id="horasKPI">
+                    <svg viewBox="0 0 120 120">
+                        <circle class="bg" cx="60" cy="60" r="54"/>
+                        <circle class="progress" cx="60" cy="60" r="54"/>
+                    </svg>
+                    <div class="value">8.5</div>
+                </div>
+                <h3>Horas por Turno</h3>
+            </div>
+
+            <div class="kpi-card" data-aos="zoom-in" data-aos-delay="300">
+                <div class="circle-progress" id="eficienciaKPI">
+                    <svg viewBox="0 0 120 120">
+                        <circle class="bg" cx="60" cy="60" r="54"/>
+                        <circle class="progress" cx="60" cy="60" r="54"/>
+                    </svg>
+                    <div class="value">95%</div>
+                </div>
+                <h3>Eficiencia</h3>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="100">
+                <h3>Distribución de Turnos</h3>
+                <div id="turnosChart"></div>
+            </div>
+
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="200">
+                <h3>Cambios Realizados</h3>
+                <div id="cambiosChart"></div>
+            </div>
+
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="300">
+                <h3>Ocupación por Horario</h3>
+                <div id="ocupacionChart"></div>
+            </div>
+
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="400">
+                <h3>Tendencia de Eficiencia</h3>
+                <div id="eficienciaChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Configuración de gráficos
+        function initializeCharts() {
+            // Gráfico de Distribución de Turnos
+            const turnosOptions = {
+                series: [{
+                    name: 'Turnos',
+                    data: [44, 55, 41, 67, 22, 43]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    foreColor: '#ffffff'
+                },
+                colors: ['#00f2ff'],
+                xaxis: {
+                    categories: ['Mañana', 'Tarde', 'Noche', 'Rotativo', 'Especial', 'Part-time']
+                }
+            };
+
+            // Gráfico de Cambios
+            const cambiosOptions = {
+                series: [{
+                    name: 'Cambios',
+                    data: [30, 40, 35, 50, 49, 60, 70]
+                }],
+                chart: {
+                    type: 'line',
+                    height: 350,
+                    foreColor: '#ffffff'
+                },
+                stroke: {
+                    curve: 'smooth'
+                },
+                colors: ['#019df4']
+            };
+
+            // Renderizar gráficos
+            new ApexCharts(document.querySelector("#turnosChart"), turnosOptions).render();
+            new ApexCharts(document.querySelector("#cambiosChart"), cambiosOptions).render();
+            // ... Agregar más gráficos según necesidad
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', initializeCharts);
+    </script>
+</body>
+</html> 

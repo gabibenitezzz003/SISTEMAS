@@ -1,0 +1,52 @@
+<div class="sidebar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="GTR Logo">
+    </div>
+    <nav class="menu">
+        <ul>
+            <li>
+                <a href="{{ url_for('dashboard') }}" class="{{ 'active' if active_page == 'dashboard' }}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('turnos') }}" class="{{ 'active' if active_page == 'turnos' }}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Turnos</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('empleados') }}" class="{{ 'active' if active_page == 'empleados' }}">
+                    <i class="fas fa-users"></i>
+                    <span>Empleados</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('analytics') }}" class="{{ 'active' if active_page == 'analytics' }}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('business_intelligence') }}" class="{{ 'active' if active_page == 'business_intelligence' }}">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Business Intelligence</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('configuracion') }}" class="{{ 'active' if active_page == 'configuracion' }}">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="user-info">
+        <img src="{{ url_for('static', filename='images/user-avatar.png') }}" alt="User Avatar">
+        <div class="user-details">
+            <span class="user-name">{{ current_user.name }}</span>
+            <span class="user-role">{{ current_user.role }}</span>
+        </div>
+    </div>
+</div> 

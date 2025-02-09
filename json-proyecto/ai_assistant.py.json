@@ -1,0 +1,455 @@
+{
+    "archivo": "ai_assistant.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\ai_assistant.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime, timedelta\nimport google.generativeai as genai\nimport os\nfrom models import AIQuery, Employee, Shift\nfrom sqlalchemy import func\nimport pandas as pd\nimport json\nimport logging\n\n# Configurar logging\nlogging.basicConfig(level=logging.INFO)\nlogger = logging.getLogger(__name__)\n\nclass GTRAssistant:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.conversation_history = []\n        self.setup_model()\n        self.load_knowledge_base()\n\n    def setup_model(self):\n        \"\"\"Inicializa el modelo de IA\"\"\"\n        try:\n            api_key = os.getenv('PALM_API_KEY')\n            if not api_key:\n                raise ValueError(\"PALM_API_KEY no encontrada\")\n            \n            # Configurar el modelo\n            genai.configure(api_key=api_key)\n            \n            # Verificar que la configuración fue exitosa\n            self.model = genai.GenerativeModel('gemini-pro')\n            \n            # Prueba de conexión\n            test_response = self.model.generate_content(\"Test de conexión\")\n            if not test_response:\n                raise ConnectionError(\"No se pudo establecer conexión con el modelo\")\n                \n            logger.info(\"Modelo Gemini Pro inicializado correctamente\")\n            \n        except Exception as e:\n            logger.error(f\"Error al inicializar el modelo: {str(e)}\")\n            raise\n\n    def load_knowledge_base(self):\n        \"\"\"Carga la base de conocimientos del sistema GTR\"\"\"\n        self.knowledge_base = {\n            \"sistema\": {\n                \"nombre\": \"GTR - Sistema de Gestión de Turnos y Recursos\",\n                \"version\": \"2.0\",\n                \"modulos\": [\n                    {\n                        \"nombre\": \"Gestión de Turnos\",\n                        \"funciones\": [\n                            \"Asignación automática de turnos\",\n                            \"Control de horarios\",\n                            \"Gestión de ausencias\",\n                            \"Rotación de personal\"\n                        ]\n                    },\n                    {\n                        \"nombre\": \"Recursos Humanos\",\n                        \"funciones\": [\n                            \"Gestión de personal\",\n                            \"Evaluación de desempeño\",\n                            \"Capacitación\",\n                            \"Desarrollo profesional\"\n                        ]\n                    },\n                    {\n                        \"nombre\": \"Analytics\",\n                        \"funciones\": [\n                            \"Métricas en tiempo real\",\n                            \"Predicciones\",\n                            \"Optimización\",\n                            \"Reportes personalizados\"\n                        ]\n                    }\n                ]\n            }\n        }\n\n    def get_system_status(self):\n        \"\"\"Obtiene el estado actual del sistema\"\"\"\n        try:\n            return {\n                \"empleados_activos\": self.session.query(Employee).count(),\n                \"turnos_activos\": self.session.query(Shift).filter(\n                    Shift.end_time > datetime.now()\n                ).count(),\n                \"metricas\": self.get_performance_metrics(),\n                \"alertas\": self.get_current_issues()\n            }\n        except Exception as e:\n            logger.error(f\"Error al obtener estado del sistema: {e}\")\n            return {}\n\n    def process_query(self, query: str) -> str:\n        try:\n            # Obtener contexto actual\n            system_status = self.get_system_status()\n            \n            # Construir prompt enriquecido\n            enriched_prompt = self.build_enriched_prompt(query, system_status)\n            \n            # Generar respuesta\n            response = self.generate_response(enriched_prompt)\n            \n            # Guardar en historial\n            self.save_interaction(query, response)\n            \n            return response\n\n        except Exception as e:\n            logger.error(f\"Error en process_query: {str(e)}\")\n            return \"Lo siento, ocurrió un error. Por favor, intenta de nuevo.\"\n\n    def build_enriched_prompt(self, query: str, system_status: dict) -> str:\n        \"\"\"Construye un prompt enriquecido con todo el contexto necesario\"\"\"\n        return f\"\"\"\n        [CONTEXTO DEL SISTEMA GTR]\n        {json.dumps(self.knowledge_base, indent=2, ensure_ascii=False)}\n\n        [ESTADO ACTUAL]\n        {json.dumps(system_status, indent=2, ensure_ascii=False)}\n\n        [INSTRUCCIONES]\n        Eres un asistente experto en el sistema GTR y también un asistente general.\n        - Usa el contexto proporcionado para respuestas específicas del sistema\n        - Usa tu conocimiento general para otros temas\n        - Mantén un tono profesional pero amigable\n        - Proporciona ejemplos prácticos cuando sea posible\n        - Si no tienes información específica, indícalo\n        - Responde siempre en español\n\n        [CONSULTA DEL USUARIO]\n        {query}\n\n        [RESPUESTA]\n        \"\"\"\n\n    def generate_response(self, prompt: str) -> str:\n        \"\"\"Genera una respuesta usando el modelo de IA\"\"\"\n        try:\n            # Crear un chat nuevo para cada interacción\n            chat = self.model.start_chat(history=[])\n            \n            # Generar la respuesta\n            response = chat.send_message(prompt)\n            \n            # Verificar si la respuesta es válida\n            if response and hasattr(response, 'text'):\n                logger.info(\"Respuesta generada exitosamente\")\n                return response.text\n            else:\n                logger.error(\"La respuesta del modelo no tiene el formato esperado\")\n                return \"Lo siento, no pude generar una respuesta coherente.\"\n            \n        except genai.types.generation_types.BlockedPromptException as e:\n            logger.error(f\"Prompt bloqueado: {str(e)}\")\n            return \"Lo siento, no puedo procesar ese tipo de consulta.\"\n        except genai.types.generation_types.GenerationException as e:\n            logger.error(f\"Error de generación: {str(e)}\")\n            return \"Hubo un problema al generar la respuesta. Por favor, intenta reformular tu pregunta.\"\n        except Exception as e:\n            logger.error(f\"Error inesperado al generar respuesta: {str(e)}\")\n            return f\"Error al generar la respuesta: {str(e)}\"\n\n    def save_interaction(self, query: str, response: str):\n        \"\"\"Guarda la interacción en la base de datos\"\"\"\n        try:\n            ai_query = AIQuery(\n                query=query,\n                response=response,\n                timestamp=datetime.now()\n            )\n            self.session.add(ai_query)\n            self.session.commit()\n            \n            # Actualizar historial de conversación\n            self.conversation_history.append({\n                \"query\": query,\n                \"response\": response,\n                \"timestamp\": datetime.now().isoformat()\n            })\n            \n        except Exception as e:\n            logger.error(f\"Error al guardar interacción: {e}\")\n            self.session.rollback()\n\n    def get_performance_metrics(self):\n        \"\"\"Obtiene métricas de rendimiento actualizadas\"\"\"\n        try:\n            return {\n                \"cobertura_turnos\": self.calculate_shift_coverage(),\n                \"eficiencia\": self.calculate_efficiency(),\n                \"satisfaccion\": self.calculate_satisfaction()\n            }\n        except Exception as e:\n            logger.error(f\"Error al obtener métricas: {e}\")\n            return {}\n\n    def calculate_shift_coverage(self):\n        \"\"\"Calcula la cobertura de turnos\"\"\"\n        try:\n            total = self.session.query(Shift).count()\n            covered = self.session.query(Shift).filter(Shift.employee_id != None).count()\n            return round((covered / total * 100), 2) if total > 0 else 0\n        except Exception as e:\n            logger.error(f\"Error al calcular cobertura: {e}\")\n            return 0\n\n    def calculate_efficiency(self):\n        \"\"\"Calcula la eficiencia del sistema\"\"\"\n        return 85.5  # Implementar lógica real\n\n    def calculate_satisfaction(self):\n        \"\"\"Calcula la satisfacción general\"\"\"\n        return 78.3  # Implementar lógica real ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "google.generativeai",
+                    "asname": "genai"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "AIQuery",
+                    "asname": null
+                },
+                {
+                    "name": "Employee",
+                    "asname": null
+                },
+                {
+                    "name": "Shift",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "func",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 6
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "json",
+                    "asname": null
+                }
+            ],
+            "lineno": 7
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "logging",
+                    "asname": null
+                }
+            ],
+            "lineno": 8
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "GTRAssistant",
+            "lineno": 14,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 15,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "setup_model",
+                    "lineno": 21,
+                    "docstring": "Inicializa el modelo de IA",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "load_knowledge_base",
+                    "lineno": 45,
+                    "docstring": "Carga la base de conocimientos del sistema GTR",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_system_status",
+                    "lineno": 83,
+                    "docstring": "Obtiene el estado actual del sistema",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "process_query",
+                    "lineno": 98,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "query"
+                    ]
+                },
+                {
+                    "nombre": "build_enriched_prompt",
+                    "lineno": 118,
+                    "docstring": "Construye un prompt enriquecido con todo el contexto necesario",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "query",
+                        "system_status"
+                    ]
+                },
+                {
+                    "nombre": "generate_response",
+                    "lineno": 142,
+                    "docstring": "Genera una respuesta usando el modelo de IA",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "prompt"
+                    ]
+                },
+                {
+                    "nombre": "save_interaction",
+                    "lineno": 169,
+                    "docstring": "Guarda la interacción en la base de datos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "query",
+                        "response"
+                    ]
+                },
+                {
+                    "nombre": "get_performance_metrics",
+                    "lineno": 191,
+                    "docstring": "Obtiene métricas de rendimiento actualizadas",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "calculate_shift_coverage",
+                    "lineno": 203,
+                    "docstring": "Calcula la cobertura de turnos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "calculate_efficiency",
+                    "lineno": 213,
+                    "docstring": "Calcula la eficiencia del sistema",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "calculate_satisfaction",
+                    "lineno": 217,
+                    "docstring": "Calcula la satisfacción general",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 15,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "setup_model",
+            "lineno": 21,
+            "docstring": "Inicializa el modelo de IA",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "load_knowledge_base",
+            "lineno": 45,
+            "docstring": "Carga la base de conocimientos del sistema GTR",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_system_status",
+            "lineno": 83,
+            "docstring": "Obtiene el estado actual del sistema",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "process_query",
+            "lineno": 98,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "query"
+            ]
+        },
+        {
+            "nombre": "build_enriched_prompt",
+            "lineno": 118,
+            "docstring": "Construye un prompt enriquecido con todo el contexto necesario",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "query",
+                "system_status"
+            ]
+        },
+        {
+            "nombre": "generate_response",
+            "lineno": 142,
+            "docstring": "Genera una respuesta usando el modelo de IA",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "prompt"
+            ]
+        },
+        {
+            "nombre": "save_interaction",
+            "lineno": 169,
+            "docstring": "Guarda la interacción en la base de datos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "query",
+                "response"
+            ]
+        },
+        {
+            "nombre": "get_performance_metrics",
+            "lineno": 191,
+            "docstring": "Obtiene métricas de rendimiento actualizadas",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "calculate_shift_coverage",
+            "lineno": 203,
+            "docstring": "Calcula la cobertura de turnos",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "calculate_efficiency",
+            "lineno": 213,
+            "docstring": "Calcula la eficiencia del sistema",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "calculate_satisfaction",
+            "lineno": 217,
+            "docstring": "Calcula la satisfacción general",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 12,
+            "targets": [
+                "logger"
+            ],
+            "value": "logging.getLogger(__name__)"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "self.conversation_history"
+            ],
+            "value": "[]"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "api_key"
+            ],
+            "value": "os.getenv('PALM_API_KEY')"
+        },
+        {
+            "lineno": 32,
+            "targets": [
+                "self.model"
+            ],
+            "value": "genai.GenerativeModel('gemini-pro')"
+        },
+        {
+            "lineno": 35,
+            "targets": [
+                "test_response"
+            ],
+            "value": "self.model.generate_content('Test de conexión')"
+        },
+        {
+            "lineno": 47,
+            "targets": [
+                "self.knowledge_base"
+            ],
+            "value": "{'sistema': {'nombre': 'GTR - Sistema de Gestión de Turnos y Recursos', 'version': '2.0', 'modulos': [{'nombre': 'Gestión de Turnos', 'funciones': ['Asignación automática de turnos', 'Control de horarios', 'Gestión de ausencias', 'Rotación de personal']}, {'nombre': 'Recursos Humanos', 'funciones': ['Gestión de personal', 'Evaluación de desempeño', 'Capacitación', 'Desarrollo profesional']}, {'nombre': 'Analytics', 'funciones': ['Métricas en tiempo real', 'Predicciones', 'Optimización', 'Reportes personalizados']}]}}"
+        },
+        {
+            "lineno": 101,
+            "targets": [
+                "system_status"
+            ],
+            "value": "self.get_system_status()"
+        },
+        {
+            "lineno": 104,
+            "targets": [
+                "enriched_prompt"
+            ],
+            "value": "self.build_enriched_prompt(query, system_status)"
+        },
+        {
+            "lineno": 107,
+            "targets": [
+                "response"
+            ],
+            "value": "self.generate_response(enriched_prompt)"
+        },
+        {
+            "lineno": 146,
+            "targets": [
+                "chat"
+            ],
+            "value": "self.model.start_chat(history=[])"
+        },
+        {
+            "lineno": 149,
+            "targets": [
+                "response"
+            ],
+            "value": "chat.send_message(prompt)"
+        },
+        {
+            "lineno": 172,
+            "targets": [
+                "ai_query"
+            ],
+            "value": "AIQuery(query=query, response=response, timestamp=datetime.now())"
+        },
+        {
+            "lineno": 206,
+            "targets": [
+                "total"
+            ],
+            "value": "self.session.query(Shift).count()"
+        },
+        {
+            "lineno": 207,
+            "targets": [
+                "covered"
+            ],
+            "value": "self.session.query(Shift).filter(Shift.employee_id != None).count()"
+        }
+    ]
+}

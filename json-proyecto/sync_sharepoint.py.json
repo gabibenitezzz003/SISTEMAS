@@ -1,0 +1,376 @@
+{
+    "archivo": "sync_sharepoint.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\sync_sharepoint.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from office365.runtime.auth.authentication_context import AuthenticationContext\nfrom office365.sharepoint.client_context import ClientContext\nfrom office365.sharepoint.files.file import File\nimport pandas as pd\nimport mysql.connector\nfrom datetime import datetime\nimport io\nimport schedule\nimport time\n\nclass SharePointToMySQL:\n    def __init__(self):\n        # Configuración SharePoint\n        self.sharepoint_url = \"https://atpgsolutions-my.sharepoint.com\"\n        self.sharepoint_file = \"/personal/gabriel_benitez_atp_gsolutions_com_ar/EY3xNgqfyOVAqnfam22KdO8B0_Rk11OLE2NuAHyz927UWw\"\n        self.username = \"gabriel.benitez@atp.gsolutions.com.ar\"\n        self.password = \"Nux87704\"  \n\n        # Configuración MySQL\n        self.mysql_config = {\n            'host': 'localhost',\n            'user': 'root',\n            'password': 'gtr123',\n            'database': 'gestion_dnh2'\n        }\n\n    def connect_sharepoint(self):\n        try:\n            ctx_auth = AuthenticationContext(self.sharepoint_url)\n            if ctx_auth.acquire_token_for_user(self.username, self.password):\n                ctx = ClientContext(self.sharepoint_url, ctx_auth)\n                return ctx\n            else:\n                raise Exception(\"Error de autenticación en SharePoint\")\n        except Exception as e:\n            print(f\"Error conectando a SharePoint: {e}\")\n            raise\n\n    def get_excel_file(self, ctx):\n        try:\n            file = ctx.web.get_file_by_server_relative_url(self.sharepoint_file)\n            response = File.open_binary(ctx, file.serverRelativeUrl)\n            return pd.read_excel(io.BytesIO(response.content))\n        except Exception as e:\n            print(f\"Error leyendo archivo Excel: {e}\")\n            raise\n\n    def process_data(self, df):\n        try:\n            # Procesar asesores\n            asesores_df = df[['dni', 'nombre', 'lider', 'skill']].drop_duplicates()\n            \n            # Procesar días no hábiles\n            dias_df = df[[\n                'dni', 'fecha', 'horario', 'horas_trabajadas', \n                'tipo_dia', 'skill', 'nombre', 'lider'\n            ]]\n\n            # Asegurar tipos de datos correctos\n            dias_df['fecha'] = pd.to_datetime(dias_df['fecha']).dt.date\n            dias_df['horas_trabajadas'] = pd.to_numeric(dias_df['horas_trabajadas'], errors='coerce')\n\n            return asesores_df, dias_df\n        except Exception as e:\n            print(f\"Error procesando datos: {e}\")\n            raise\n\n    def update_database(self, asesores_df, dias_df):\n        conn = mysql.connector.connect(**self.mysql_config)\n        cursor = conn.cursor()\n\n        try:\n            # Actualizar tabla asesores\n            for _, row in asesores_df.iterrows():\n                cursor.execute(\"\"\"\n                    INSERT INTO asesores (dni, nombre, lider, skill)\n                    VALUES (%s, %s, %s, %s)\n                    ON DUPLICATE KEY UPDATE\n                    nombre = VALUES(nombre),\n                    lider = VALUES(lider),\n                    skill = VALUES(skill)\n                \"\"\", (row['dni'], row['nombre'], row['lider'], row['skill']))\n\n            # Actualizar tabla dias_no_habiles\n            for _, row in dias_df.iterrows():\n                cursor.execute(\"\"\"\n                    INSERT INTO dias_no_habiles \n                    (dni, fecha, horario, horas_trabajadas, tipo_dia, skill, nombre, lider)\n                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)\n                \"\"\", (\n                    row['dni'], row['fecha'], row['horario'], \n                    row['horas_trabajadas'], row['tipo_dia'],\n                    row['skill'], row['nombre'], row['lider']\n                ))\n\n            conn.commit()\n            print(f\"Base de datos actualizada exitosamente: {datetime.now()}\")\n\n        except Exception as e:\n            print(f\"Error actualizando la base de datos: {e}\")\n            conn.rollback()\n            raise\n\n        finally:\n            cursor.close()\n            conn.close()\n\n    def sync_data(self):\n        try:\n            print(f\"Iniciando sincronización: {datetime.now()}\")\n            ctx = self.connect_sharepoint()\n            df = self.get_excel_file(ctx)\n            asesores_df, dias_df = self.process_data(df)\n            self.update_database(asesores_df, dias_df)\n            print(f\"Sincronización completada: {datetime.now()}\")\n        except Exception as e:\n            print(f\"Error en la sincronización: {e}\")\n\ndef main():\n    syncer = SharePointToMySQL()\n    \n    # Ejecutar sincronización inicial\n    print(\"Iniciando primera sincronización...\")\n    syncer.sync_data()\n    \n    # Programar sincronización cada 15 minutos\n    schedule.every(15).minutes.do(syncer.sync_data)\n    \n    print(\"Script en ejecución. Presiona Ctrl+C para detener.\")\n    while True:\n        schedule.run_pending()\n        time.sleep(60)\n\nif __name__ == \"__main__\":\n    main()",
+    "imports": [
+        {
+            "type": "from",
+            "module": "office365.runtime.auth.authentication_context",
+            "level": 0,
+            "names": [
+                {
+                    "name": "AuthenticationContext",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "office365.sharepoint.client_context",
+            "level": 0,
+            "names": [
+                {
+                    "name": "ClientContext",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "office365.sharepoint.files.file",
+            "level": 0,
+            "names": [
+                {
+                    "name": "File",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "mysql.connector",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 6
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "io",
+                    "asname": null
+                }
+            ],
+            "lineno": 7
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "schedule",
+                    "asname": null
+                }
+            ],
+            "lineno": 8
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "time",
+                    "asname": null
+                }
+            ],
+            "lineno": 9
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "SharePointToMySQL",
+            "lineno": 11,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 12,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "connect_sharepoint",
+                    "lineno": 27,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "get_excel_file",
+                    "lineno": 39,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "ctx"
+                    ]
+                },
+                {
+                    "nombre": "process_data",
+                    "lineno": 48,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "df"
+                    ]
+                },
+                {
+                    "nombre": "update_database",
+                    "lineno": 68,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "asesores_df",
+                        "dias_df"
+                    ]
+                },
+                {
+                    "nombre": "sync_data",
+                    "lineno": 108,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 12,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "connect_sharepoint",
+            "lineno": 27,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "get_excel_file",
+            "lineno": 39,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "ctx"
+            ]
+        },
+        {
+            "nombre": "process_data",
+            "lineno": 48,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "df"
+            ]
+        },
+        {
+            "nombre": "update_database",
+            "lineno": 68,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "asesores_df",
+                "dias_df"
+            ]
+        },
+        {
+            "nombre": "sync_data",
+            "lineno": 108,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "main",
+            "lineno": 119,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 14,
+            "targets": [
+                "self.sharepoint_url"
+            ],
+            "value": "'https://atpgsolutions-my.sharepoint.com'"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "self.sharepoint_file"
+            ],
+            "value": "'/personal/gabriel_benitez_atp_gsolutions_com_ar/EY3xNgqfyOVAqnfam22KdO8B0_Rk11OLE2NuAHyz927UWw'"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "self.username"
+            ],
+            "value": "'gabriel.benitez@atp.gsolutions.com.ar'"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "self.password"
+            ],
+            "value": "'Nux87704'"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "self.mysql_config"
+            ],
+            "value": "{'host': 'localhost', 'user': 'root', 'password': 'gtr123', 'database': 'gestion_dnh2'}"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "ctx_auth"
+            ],
+            "value": "AuthenticationContext(self.sharepoint_url)"
+        },
+        {
+            "lineno": 31,
+            "targets": [
+                "ctx"
+            ],
+            "value": "ClientContext(self.sharepoint_url, ctx_auth)"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "file"
+            ],
+            "value": "ctx.web.get_file_by_server_relative_url(self.sharepoint_file)"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "response"
+            ],
+            "value": "File.open_binary(ctx, file.serverRelativeUrl)"
+        },
+        {
+            "lineno": 51,
+            "targets": [
+                "asesores_df"
+            ],
+            "value": "df[['dni', 'nombre', 'lider', 'skill']].drop_duplicates()"
+        },
+        {
+            "lineno": 54,
+            "targets": [
+                "dias_df"
+            ],
+            "value": "df[['dni', 'fecha', 'horario', 'horas_trabajadas', 'tipo_dia', 'skill', 'nombre', 'lider']]"
+        },
+        {
+            "lineno": 60,
+            "targets": [
+                "dias_df['fecha']"
+            ],
+            "value": "pd.to_datetime(dias_df['fecha']).dt.date"
+        },
+        {
+            "lineno": 61,
+            "targets": [
+                "dias_df['horas_trabajadas']"
+            ],
+            "value": "pd.to_numeric(dias_df['horas_trabajadas'], errors='coerce')"
+        },
+        {
+            "lineno": 69,
+            "targets": [
+                "conn"
+            ],
+            "value": "mysql.connector.connect(**self.mysql_config)"
+        },
+        {
+            "lineno": 70,
+            "targets": [
+                "cursor"
+            ],
+            "value": "conn.cursor()"
+        },
+        {
+            "lineno": 111,
+            "targets": [
+                "ctx"
+            ],
+            "value": "self.connect_sharepoint()"
+        },
+        {
+            "lineno": 112,
+            "targets": [
+                "df"
+            ],
+            "value": "self.get_excel_file(ctx)"
+        },
+        {
+            "lineno": 113,
+            "targets": [
+                "(asesores_df, dias_df)"
+            ],
+            "value": "self.process_data(df)"
+        },
+        {
+            "lineno": 120,
+            "targets": [
+                "syncer"
+            ],
+            "value": "SharePointToMySQL()"
+        }
+    ]
+}

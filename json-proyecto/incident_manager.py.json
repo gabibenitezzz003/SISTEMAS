@@ -1,0 +1,332 @@
+{
+    "archivo": "incident_manager.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\incident_manager.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime, timedelta\nimport numpy as np\nfrom sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\n\nclass Incident(Base):\n    __tablename__ = 'incidents'\n    \n    id = Column(Integer, primary_key=True)\n    type = Column(String(50))\n    description = Column(String(500))\n    severity = Column(Integer)\n    timestamp = Column(DateTime, default=datetime.utcnow)\n    department_id = Column(Integer, ForeignKey('departments.id'))\n    affected_employees = Column(JSON)\n\nclass RiskAnalyzer:\n    def __init__(self):\n        self.risk_factors = {}\n        \n    def analyze_risk(self, incident_data):\n        # Implementar análisis de riesgo\n        pass\n\nclass IncidentManager:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.risk_analyzer = RiskAnalyzer()\n        \n    def register_incident(self, incident_data):\n        \"\"\"Registra y analiza un nuevo incidente\"\"\"\n        # Crear registro de incidente\n        incident = Incident(\n            type=incident_data['type'],\n            description=incident_data['description'],\n            severity=self.calculate_severity(incident_data),\n            timestamp=datetime.now(),\n            affected_employees=incident_data['affected_employees'],\n            department_id=incident_data['department_id']\n        )\n        \n        # Analizar impacto\n        impact_analysis = self.analyze_incident_impact(incident)\n        \n        # Generar respuesta automática\n        response_plan = self.generate_response_plan(incident, impact_analysis)\n        \n        # Actualizar métricas de riesgo\n        self.update_risk_metrics(incident)\n        \n        return {\n            'incident': incident,\n            'impact_analysis': impact_analysis,\n            'response_plan': response_plan,\n            'risk_update': self.get_updated_risk_assessment()\n        }\n        \n    def analyze_incident_impact(self, incident):\n        \"\"\"Analiza el impacto de un incidente en detalle\"\"\"\n        return {\n            'immediate_impact': self.calculate_immediate_impact(incident),\n            'long_term_impact': self.predict_long_term_impact(incident),\n            'affected_operations': self.identify_affected_operations(incident),\n            'mitigation_suggestions': self.generate_mitigation_suggestions(incident)\n        }\n        \n    def generate_response_plan(self, incident, impact_analysis):\n        \"\"\"Genera un plan de respuesta detallado\"\"\"\n        return {\n            'immediate_actions': self.determine_immediate_actions(incident),\n            'required_resources': self.calculate_required_resources(incident),\n            'timeline': self.create_response_timeline(incident),\n            'responsibility_matrix': self.assign_responsibilities(incident)\n        } ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "numpy",
+                    "asname": "np"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Column",
+                    "asname": null
+                },
+                {
+                    "name": "Integer",
+                    "asname": null
+                },
+                {
+                    "name": "String",
+                    "asname": null
+                },
+                {
+                    "name": "DateTime",
+                    "asname": null
+                },
+                {
+                    "name": "ForeignKey",
+                    "asname": null
+                },
+                {
+                    "name": "JSON",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.ext.declarative",
+            "level": 0,
+            "names": [
+                {
+                    "name": "declarative_base",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "Incident",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "RiskAnalyzer",
+            "lineno": 19,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 20,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "analyze_risk",
+                    "lineno": 23,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "incident_data"
+                    ]
+                }
+            ]
+        },
+        {
+            "nombre": "IncidentManager",
+            "lineno": 27,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 28,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "register_incident",
+                    "lineno": 32,
+                    "docstring": "Registra y analiza un nuevo incidente",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "incident_data"
+                    ]
+                },
+                {
+                    "nombre": "analyze_incident_impact",
+                    "lineno": 60,
+                    "docstring": "Analiza el impacto de un incidente en detalle",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "incident"
+                    ]
+                },
+                {
+                    "nombre": "generate_response_plan",
+                    "lineno": 69,
+                    "docstring": "Genera un plan de respuesta detallado",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "incident",
+                        "impact_analysis"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 20,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "analyze_risk",
+            "lineno": 23,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "incident_data"
+            ]
+        },
+        {
+            "nombre": "__init__",
+            "lineno": 28,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "register_incident",
+            "lineno": 32,
+            "docstring": "Registra y analiza un nuevo incidente",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "incident_data"
+            ]
+        },
+        {
+            "nombre": "analyze_incident_impact",
+            "lineno": 60,
+            "docstring": "Analiza el impacto de un incidente en detalle",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "incident"
+            ]
+        },
+        {
+            "nombre": "generate_response_plan",
+            "lineno": 69,
+            "docstring": "Genera un plan de respuesta detallado",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "incident",
+                "impact_analysis"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "Base"
+            ],
+            "value": "declarative_base()"
+        },
+        {
+            "lineno": 9,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'incidents'"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "type"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "description"
+            ],
+            "value": "Column(String(500))"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "severity"
+            ],
+            "value": "Column(Integer)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "Column(DateTime, default=datetime.utcnow)"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "department_id"
+            ],
+            "value": "Column(Integer, ForeignKey('departments.id'))"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "affected_employees"
+            ],
+            "value": "Column(JSON)"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "self.risk_factors"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "self.risk_analyzer"
+            ],
+            "value": "RiskAnalyzer()"
+        },
+        {
+            "lineno": 35,
+            "targets": [
+                "incident"
+            ],
+            "value": "Incident(type=incident_data['type'], description=incident_data['description'], severity=self.calculate_severity(incident_data), timestamp=datetime.now(), affected_employees=incident_data['affected_employees'], department_id=incident_data['department_id'])"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "impact_analysis"
+            ],
+            "value": "self.analyze_incident_impact(incident)"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "response_plan"
+            ],
+            "value": "self.generate_response_plan(incident, impact_analysis)"
+        }
+    ]
+}

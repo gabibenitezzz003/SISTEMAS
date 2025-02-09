@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - GTR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Dashboard</h1>
+        <div class="time-filters">
+            <button class="active">Hoy</button>
+            <button>Semana</button>
+            <button>Mes</button>
+        </div>
+
+        <!-- KPI Circles -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="98">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">500</span>
+                    </div>
+                </div>
+                <h3>Total Asesores</h3>
+            </div>
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="87">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">8.5</span>
+                    </div>
+                </div>
+                <h3>Horas por Turno</h3>
+            </div>
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="95">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">95</span>
+                        <span class="percent">%</span>
+                    </div>
+                </div>
+                <h3>Eficiencia</h3>
+            </div>
+        </div>
+
+        <!-- Charts Container -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Distribución de Turnos</h3>
+                <div id="distribucionTurnos"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Cambios Realizados</h3>
+                <div id="cambiosRealizados"></div>
+            </div>
+            <div class="chart-card wide">
+                <h3>Asistencia Fin de Semana</h3>
+                <div id="asistenciaFinde"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gráfico de Distribución de Turnos
+        const distribucionData = {
+            values: [125, 125, 125, 125],
+            labels: ['Mañana', 'Tarde', 'Noche', 'Madrugada'],
+            type: 'pie',
+            marker: {
+                colors: ['#00f2ff', '#0099ff', '#0066ff', '#0033ff']
+            }
+        };
+
+        const distribucionLayout = {
+            title: 'Distribución por Horario',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' },
+            showlegend: true,
+            legend: { font: { color: '#ffffff' } }
+        };
+
+        Plotly.newPlot('distribucionTurnos', [distribucionData], distribucionLayout);
+
+        // Gráfico de Cambios Realizados
+        const cambiosData = {
+            x: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+            y: [15, 12, 8, 10, 7, 5, 3],
+            type: 'bar',
+            marker: { color: '#00f2ff' }
+        };
+
+        const cambiosLayout = {
+            title: 'Cambios por Día',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' },
+            xaxis: { gridcolor: '#ffffff20' },
+            yaxis: { gridcolor: '#ffffff20' }
+        };
+
+        Plotly.newPlot('cambiosRealizados', [cambiosData], cambiosLayout);
+
+        // Gráfico de Asistencia Fin de Semana
+        const asistenciaData = {
+            x: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
+            y: [98, 96, 97, 95],
+            type: 'scatter',
+            line: { color: '#00f2ff', width: 3 }
+        };
+
+        const asistenciaLayout = {
+            title: 'Asistencia Mensual',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' },
+            xaxis: { gridcolor: '#ffffff20' },
+            yaxis: { gridcolor: '#ffffff20', range: [90, 100] }
+        };
+
+        Plotly.newPlot('asistenciaFinde', [asistenciaData], asistenciaLayout);
+    </script>
+</body>
+</html>

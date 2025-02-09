@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Intelligence Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Business Intelligence Dashboard</h1>
+            <div class="time-filters">
+                <button class="active">Hoy</button>
+                <button>Semana</button>
+                <button>Mes</button>
+            </div>
+        </div>
+
+        <!-- KPI Circles -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="95">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">95</span>
+                        <span class="percent">%</span>
+                    </div>
+                </div>
+                <h3>Precisión Predictiva</h3>
+            </div>
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="88">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">88</span>
+                        <span class="percent">%</span>
+                    </div>
+                </div>
+                <h3>Confiabilidad ML</h3>
+            </div>
+            <div class="kpi-card">
+                <div class="circle-progress" data-value="93">
+                    <svg>
+                        <circle class="bg" cx="60" cy="60" r="54"></circle>
+                        <circle class="progress" cx="60" cy="60" r="54"></circle>
+                    </svg>
+                    <div class="percentage">
+                        <span class="value">93</span>
+                        <span class="percent">%</span>
+                    </div>
+                </div>
+                <h3>ROI Predicho</h3>
+            </div>
+        </div>
+
+        <!-- Charts Container -->
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Predicción de Ingresos</h3>
+                <div id="revenuePredictionChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Tendencias de KPIs</h3>
+                <div id="kpiTrendsChart"></div>
+            </div>
+            <div class="chart-card wide">
+                <h3>Análisis Predictivo de Rendimiento</h3>
+                <div id="predictiveAnalysisChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gráfico de Predicción de Ingresos
+        const revenueData = {
+            x: ['Q1', 'Q2', 'Q3', 'Q4'],
+            y: [150000, 165000, 180000, 200000],
+            name: 'Predicción',
+            type: 'scatter',
+            line: { color: '#00f2ff', width: 3 },
+        };
+
+        const actualRevenue = {
+            x: ['Q1', 'Q2'],
+            y: [148000, 163000],
+            name: 'Real',
+            type: 'scatter',
+            line: { color: '#ffffff', width: 3, dash: 'dot' }
+        };
+
+        const revenueLayout = {
+            title: 'Predicción vs Real',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' },
+            xaxis: { gridcolor: '#ffffff20' },
+            yaxis: { gridcolor: '#ffffff20' },
+            legend: { font: { color: '#ffffff' } }
+        };
+
+        Plotly.newPlot('revenuePredictionChart', [revenueData, actualRevenue], revenueLayout);
+
+        // Gráfico de Tendencias KPI
+        const kpiTrends = {
+            x: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            y: [85, 88, 90, 92, 94, 95],
+            type: 'scatter',
+            name: 'Precisión ML',
+            line: { color: '#00f2ff' }
+        };
+
+        const kpiLayout = {
+            title: 'Evolución de Precisión',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' },
+            xaxis: { gridcolor: '#ffffff20' },
+            yaxis: { gridcolor: '#ffffff20', range: [80, 100] }
+        };
+
+        Plotly.newPlot('kpiTrendsChart', [kpiTrends], kpiLayout);
+
+        // Gráfico de Análisis Predictivo
+        const predictiveData = {
+            z: [[1, 20, 30], [20, 1, 60], [30, 60, 1]],
+            type: 'heatmap',
+            colorscale: 'Viridis'
+        };
+
+        const predictiveLayout = {
+            title: 'Matriz de Correlación Predictiva',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#ffffff' }
+        };
+
+        Plotly.newPlot('predictiveAnalysisChart', [predictiveData], predictiveLayout);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GTR - Sistema de Gestión de Turnos y Recursos</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/gss-nuevo.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="welcome-container">
+        <!-- Partículas de fondo -->
+        <div class="particles"></div>
+        
+        <div class="welcome-content">
+            <!-- Reemplazar el texto por el logo -->
+            <img src="{{ url_for('static', filename='img/gss-nuevo.ico') }}" alt="GTR Logo" class="welcome-logo">
+            <h1>Sistema de Gestión GTR y Recursos</h1>
+            <p>Optimización y Control de Recursos Humanos</p>
+            <div class="welcome-buttons">
+                <a href="{{ url_for('submenu') }}" class="btn-enter">
+                    <span>Ingresar al Sistema</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            <!-- Decoración adicional -->
+            <div class="welcome-decoration">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para partículas -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS('particles', {
+            particles: {
+                number: { value: 80 },
+                color: { value: '#ffffff' },
+                opacity: { value: 0.5 },
+                size: { value: 3 },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

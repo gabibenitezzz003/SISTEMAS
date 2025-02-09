@@ -1,0 +1,196 @@
+{
+    "archivo": "report_generator.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\report_generator.py",
+    "docstring_modulo": null,
+    "contenido_completo": "import pandas as pd\nimport plotly.graph_objects as go\nfrom datetime import datetime\nimport pdfkit\n\nclass ReportGenerator:\n    def __init__(self, db_session):\n        self.session = db_session\n        \n    def generate_monthly_report(self, month, year):\n        \"\"\"Genera un reporte mensual completo\"\"\"\n        data = self.gather_monthly_data(month, year)\n        \n        # Crear visualizaciones\n        figures = self.create_visualizations(data)\n        \n        # Generar HTML\n        html = self.create_html_report(data, figures)\n        \n        # Convertir a PDF\n        pdf_path = f'reports/monthly_report_{year}_{month}.pdf'\n        pdfkit.from_string(html, pdf_path)\n        \n        return pdf_path\n        \n    def create_visualizations(self, data):\n        \"\"\"Crea visualizaciones interactivas\"\"\"\n        figures = {}\n        \n        # Gráfico de horas por departamento\n        fig_hours = go.Figure(data=[\n            go.Bar(\n                x=data['departments'],\n                y=data['hours_per_dept'],\n                marker_color='rgb(0, 255, 157)'\n            )\n        ])\n        fig_hours.update_layout(\n            title='Horas por Departamento',\n            template='plotly_dark'\n        )\n        figures['hours'] = fig_hours\n        \n        # Gráfico de eficiencia\n        fig_efficiency = go.Figure(data=[\n            go.Indicator(\n                mode = \"gauge+number\",\n                value = data['efficiency'],\n                title = {'text': \"Eficiencia Global\"},\n                gauge = {\n                    'axis': {'range': [None, 100]},\n                    'bar': {'color': \"rgb(0, 255, 157)\"},\n                    'steps': [\n                        {'range': [0, 60], 'color': \"red\"},\n                        {'range': [60, 80], 'color': \"yellow\"},\n                        {'range': [80, 100], 'color': \"green\"}\n                    ]\n                }\n            )\n        ])\n        figures['efficiency'] = fig_efficiency\n        \n        return figures ",
+    "imports": [
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "plotly.graph_objects",
+                    "asname": "go"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pdfkit",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "ReportGenerator",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 7,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "generate_monthly_report",
+                    "lineno": 10,
+                    "docstring": "Genera un reporte mensual completo",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "month",
+                        "year"
+                    ]
+                },
+                {
+                    "nombre": "create_visualizations",
+                    "lineno": 26,
+                    "docstring": "Crea visualizaciones interactivas",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "data"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "generate_monthly_report",
+            "lineno": 10,
+            "docstring": "Genera un reporte mensual completo",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "month",
+                "year"
+            ]
+        },
+        {
+            "nombre": "create_visualizations",
+            "lineno": 26,
+            "docstring": "Crea visualizaciones interactivas",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "data"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 8,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "data"
+            ],
+            "value": "self.gather_monthly_data(month, year)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "figures"
+            ],
+            "value": "self.create_visualizations(data)"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "html"
+            ],
+            "value": "self.create_html_report(data, figures)"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "pdf_path"
+            ],
+            "value": "f'reports/monthly_report_{year}_{month}.pdf'"
+        },
+        {
+            "lineno": 28,
+            "targets": [
+                "figures"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 31,
+            "targets": [
+                "fig_hours"
+            ],
+            "value": "go.Figure(data=[go.Bar(x=data['departments'], y=data['hours_per_dept'], marker_color='rgb(0, 255, 157)')])"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "figures['hours']"
+            ],
+            "value": "fig_hours"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "fig_efficiency"
+            ],
+            "value": "go.Figure(data=[go.Indicator(mode='gauge+number', value=data['efficiency'], title={'text': 'Eficiencia Global'}, gauge={'axis': {'range': [None, 100]}, 'bar': {'color': 'rgb(0, 255, 157)'}, 'steps': [{'range': [0, 60], 'color': 'red'}, {'range': [60, 80], 'color': 'yellow'}, {'range': [80, 100], 'color': 'green'}]})])"
+        },
+        {
+            "lineno": 61,
+            "targets": [
+                "figures['efficiency']"
+            ],
+            "value": "fig_efficiency"
+        }
+    ]
+}

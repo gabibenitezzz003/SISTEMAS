@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IA GTR - Sistema Inteligente</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/gss-nuevo.ico') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ia_gtr.css') }}">
+</head>
+<body class="ia-theme">
+    <div class="ai-container">
+        <nav class="top-nav">
+            <div class="nav-brand">IAGTR</div>
+            <div class="nav-links">
+                <a href="#" class="active">Dashboard</a>
+            </div>
+        </nav>
+
+        <div class="ai-interface">
+            <div class="main-content">
+                <div class="ai-status-card">
+                    <div class="ai-visualization">
+                        <div class="ai-core"></div>
+                        <div class="ai-ring"></div>
+                        <div class="ai-particles"></div>
+                    </div>
+                    <div class="ai-status">
+                        <h2>Asistente IA</h2>
+                        <p>Sistema activo y listo para ayudar</p>
+                    </div>
+                </div>
+
+                <div class="chat-interface">
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Aquí aparecerán los mensajes -->
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Escribe tu mensaje...">
+                        <button id="send-button" class="send-btn">Enviar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <button class="action-btn glow">
+                    <span>Predicción Automática</span>
+                </button>
+                <button class="action-btn">
+                    <span>Análisis de Tendencias</span>
+                </button>
+                <button class="action-btn">
+                    <span>Optimizar Horarios</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            // Mostrar mensaje del usuario
+            addMessage(query, 'user');
+            input.value = '';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: query }),
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    addMessage('Error: ' + data.error, 'assistant');
+                } else {
+                    addMessage(data.response, 'assistant');
+                }
+            } catch (error) {
+                addMessage('Error de conexión', 'assistant');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

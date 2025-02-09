@@ -1,0 +1,643 @@
+{
+    "archivo": "models.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\models.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Boolean, ForeignKey, Text, Float\nfrom sqlalchemy.ext.declarative import declarative_base\nfrom sqlalchemy.orm import relationship\nfrom database import db\n\nBase = declarative_base()\n\nclass Employee(db.Model):\n    __tablename__ = 'employees'\n    \n    id = db.Column(db.Integer, primary_key=True)\n    name = db.Column(db.String(100))\n    skill = db.Column(db.String)  # COM o CROSS\n    active = db.Column(db.Boolean, default=True)\n    shifts = relationship(\"Shift\", back_populates=\"employee\")\n\nclass Shift(db.Model):\n    __tablename__ = 'shifts'\n    \n    id = db.Column(db.Integer, primary_key=True)\n    employee_id = db.Column(db.Integer, db.ForeignKey('employees.id'))\n    date = db.Column(db.Date)\n    shift_type = db.Column(db.String)  # Mañana, Tarde, Noche\n    is_weekend = db.Column(db.Boolean)\n    employee = relationship(\"Employee\", back_populates=\"shifts\")\n\nclass WeekendSchedule(Base):\n    __tablename__ = 'weekend_schedules'\n    \n    id = Column(Integer, primary_key=True)\n    date = Column(Date)\n    employee_id = Column(Integer, ForeignKey('employees.id'))\n    shift_type = Column(String)\n    employee = relationship(\"Employee\") \n\nclass Asesor(Base):\n    __tablename__ = 'asesores'\n    \n    id = Column(Integer, primary_key=True)\n    nombre = Column(String(100))\n    dni = Column(String(20))\n    skill = Column(String(50))\n    activo = Column(Boolean, default=True)\n\nclass DiaNoHabil(Base):\n    __tablename__ = 'dias_no_habiles'\n    \n    id = Column(Integer, primary_key=True)\n    asesor_id = Column(Integer, ForeignKey('asesores.id'))\n    fecha = Column(Date)\n    tipo = Column(String(50))\n    horario = Column(String(50))\n\nclass CodigoHorario(Base):\n    __tablename__ = 'codigos_horario'\n    \n    id = Column(Integer, primary_key=True)\n    codigo = Column(String(20))\n    descripcion = Column(String(100))\n\nclass Feriado(Base):\n    __tablename__ = 'feriados'\n    \n    id = Column(Integer, primary_key=True)\n    fecha = Column(Date)\n    descripcion = Column(String(100)) \n\nclass AIQuery(db.Model):\n    __tablename__ = 'ai_queries'\n    \n    id = db.Column(db.Integer, primary_key=True)\n    query = db.Column(db.String(500))\n    response = db.Column(db.Text(length=4294967295))\n    timestamp = db.Column(db.DateTime) \n\nclass CompanyMetrics(db.Model):\n    __tablename__ = 'company_metrics'\n    id = db.Column(db.Integer, primary_key=True)\n    company_name = db.Column(db.String(50))\n    market_share = db.Column(db.Float)\n    customer_satisfaction = db.Column(db.Float)\n    coverage_score = db.Column(db.Float)\n    timestamp = db.Column(db.DateTime)\n\nclass MarketData(db.Model):\n    __tablename__ = 'market_data'\n    id = db.Column(db.Integer, primary_key=True)\n    company_name = db.Column(db.String(50))\n    plan_name = db.Column(db.String(100))\n    price = db.Column(db.Float)\n    data_gb = db.Column(db.Integer)\n    minutes = db.Column(db.Integer)\n    timestamp = db.Column(db.DateTime)\n\nclass SalesData(db.Model):\n    __tablename__ = 'sales_data'\n    id = db.Column(db.Integer, primary_key=True)\n    company_name = db.Column(db.String(50))\n    region = db.Column(db.String(50))\n    sales_amount = db.Column(db.Float)\n    units_sold = db.Column(db.Integer)\n    timestamp = db.Column(db.DateTime) ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "create_engine",
+                    "asname": null
+                },
+                {
+                    "name": "Column",
+                    "asname": null
+                },
+                {
+                    "name": "Integer",
+                    "asname": null
+                },
+                {
+                    "name": "String",
+                    "asname": null
+                },
+                {
+                    "name": "Date",
+                    "asname": null
+                },
+                {
+                    "name": "DateTime",
+                    "asname": null
+                },
+                {
+                    "name": "Boolean",
+                    "asname": null
+                },
+                {
+                    "name": "ForeignKey",
+                    "asname": null
+                },
+                {
+                    "name": "Text",
+                    "asname": null
+                },
+                {
+                    "name": "Float",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.ext.declarative",
+            "level": 0,
+            "names": [
+                {
+                    "name": "declarative_base",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.orm",
+            "level": 0,
+            "names": [
+                {
+                    "name": "relationship",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "Employee",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "Shift",
+            "lineno": 17,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "WeekendSchedule",
+            "lineno": 27,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "Asesor",
+            "lineno": 36,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "DiaNoHabil",
+            "lineno": 45,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "CodigoHorario",
+            "lineno": 54,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "Feriado",
+            "lineno": 61,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "AIQuery",
+            "lineno": 68,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "CompanyMetrics",
+            "lineno": 76,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "MarketData",
+            "lineno": 85,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "SalesData",
+            "lineno": 95,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        }
+    ],
+    "funciones": [],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "Base"
+            ],
+            "value": "declarative_base()"
+        },
+        {
+            "lineno": 9,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'employees'"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "name"
+            ],
+            "value": "db.Column(db.String(100))"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "skill"
+            ],
+            "value": "db.Column(db.String)"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "active"
+            ],
+            "value": "db.Column(db.Boolean, default=True)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "shifts"
+            ],
+            "value": "relationship('Shift', back_populates='employee')"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'shifts'"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "employee_id"
+            ],
+            "value": "db.Column(db.Integer, db.ForeignKey('employees.id'))"
+        },
+        {
+            "lineno": 22,
+            "targets": [
+                "date"
+            ],
+            "value": "db.Column(db.Date)"
+        },
+        {
+            "lineno": 23,
+            "targets": [
+                "shift_type"
+            ],
+            "value": "db.Column(db.String)"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "is_weekend"
+            ],
+            "value": "db.Column(db.Boolean)"
+        },
+        {
+            "lineno": 25,
+            "targets": [
+                "employee"
+            ],
+            "value": "relationship('Employee', back_populates='shifts')"
+        },
+        {
+            "lineno": 28,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'weekend_schedules'"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 31,
+            "targets": [
+                "date"
+            ],
+            "value": "Column(Date)"
+        },
+        {
+            "lineno": 32,
+            "targets": [
+                "employee_id"
+            ],
+            "value": "Column(Integer, ForeignKey('employees.id'))"
+        },
+        {
+            "lineno": 33,
+            "targets": [
+                "shift_type"
+            ],
+            "value": "Column(String)"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "employee"
+            ],
+            "value": "relationship('Employee')"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'asesores'"
+        },
+        {
+            "lineno": 39,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 40,
+            "targets": [
+                "nombre"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "dni"
+            ],
+            "value": "Column(String(20))"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "skill"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 43,
+            "targets": [
+                "activo"
+            ],
+            "value": "Column(Boolean, default=True)"
+        },
+        {
+            "lineno": 46,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'dias_no_habiles'"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 49,
+            "targets": [
+                "asesor_id"
+            ],
+            "value": "Column(Integer, ForeignKey('asesores.id'))"
+        },
+        {
+            "lineno": 50,
+            "targets": [
+                "fecha"
+            ],
+            "value": "Column(Date)"
+        },
+        {
+            "lineno": 51,
+            "targets": [
+                "tipo"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 52,
+            "targets": [
+                "horario"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 55,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'codigos_horario'"
+        },
+        {
+            "lineno": 57,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 58,
+            "targets": [
+                "codigo"
+            ],
+            "value": "Column(String(20))"
+        },
+        {
+            "lineno": 59,
+            "targets": [
+                "descripcion"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 62,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'feriados'"
+        },
+        {
+            "lineno": 64,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 65,
+            "targets": [
+                "fecha"
+            ],
+            "value": "Column(Date)"
+        },
+        {
+            "lineno": 66,
+            "targets": [
+                "descripcion"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 69,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'ai_queries'"
+        },
+        {
+            "lineno": 71,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 72,
+            "targets": [
+                "query"
+            ],
+            "value": "db.Column(db.String(500))"
+        },
+        {
+            "lineno": 73,
+            "targets": [
+                "response"
+            ],
+            "value": "db.Column(db.Text(length=4294967295))"
+        },
+        {
+            "lineno": 74,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "db.Column(db.DateTime)"
+        },
+        {
+            "lineno": 77,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'company_metrics'"
+        },
+        {
+            "lineno": 78,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 79,
+            "targets": [
+                "company_name"
+            ],
+            "value": "db.Column(db.String(50))"
+        },
+        {
+            "lineno": 80,
+            "targets": [
+                "market_share"
+            ],
+            "value": "db.Column(db.Float)"
+        },
+        {
+            "lineno": 81,
+            "targets": [
+                "customer_satisfaction"
+            ],
+            "value": "db.Column(db.Float)"
+        },
+        {
+            "lineno": 82,
+            "targets": [
+                "coverage_score"
+            ],
+            "value": "db.Column(db.Float)"
+        },
+        {
+            "lineno": 83,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "db.Column(db.DateTime)"
+        },
+        {
+            "lineno": 86,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'market_data'"
+        },
+        {
+            "lineno": 87,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 88,
+            "targets": [
+                "company_name"
+            ],
+            "value": "db.Column(db.String(50))"
+        },
+        {
+            "lineno": 89,
+            "targets": [
+                "plan_name"
+            ],
+            "value": "db.Column(db.String(100))"
+        },
+        {
+            "lineno": 90,
+            "targets": [
+                "price"
+            ],
+            "value": "db.Column(db.Float)"
+        },
+        {
+            "lineno": 91,
+            "targets": [
+                "data_gb"
+            ],
+            "value": "db.Column(db.Integer)"
+        },
+        {
+            "lineno": 92,
+            "targets": [
+                "minutes"
+            ],
+            "value": "db.Column(db.Integer)"
+        },
+        {
+            "lineno": 93,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "db.Column(db.DateTime)"
+        },
+        {
+            "lineno": 96,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'sales_data'"
+        },
+        {
+            "lineno": 97,
+            "targets": [
+                "id"
+            ],
+            "value": "db.Column(db.Integer, primary_key=True)"
+        },
+        {
+            "lineno": 98,
+            "targets": [
+                "company_name"
+            ],
+            "value": "db.Column(db.String(50))"
+        },
+        {
+            "lineno": 99,
+            "targets": [
+                "region"
+            ],
+            "value": "db.Column(db.String(50))"
+        },
+        {
+            "lineno": 100,
+            "targets": [
+                "sales_amount"
+            ],
+            "value": "db.Column(db.Float)"
+        },
+        {
+            "lineno": 101,
+            "targets": [
+                "units_sold"
+            ],
+            "value": "db.Column(db.Integer)"
+        },
+        {
+            "lineno": 102,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "db.Column(db.DateTime)"
+        }
+    ]
+}

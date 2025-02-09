@@ -1,0 +1,234 @@
+{
+    "archivo": "data_processor.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\utils\\data_processor.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime\nimport pandas as pd\nfrom database import db\nfrom database import db_session\nfrom models import Asesor, DiaNoHabil, CodigoHorario, Feriado\n\nclass DNHProcessor:\n    def __init__(self, session):\n        self.session = session\n        \n    def process_dnh_file(self, df):\n        \"\"\"Procesa el archivo DNH y prepara los datos para la base de datos\"\"\"\n        processed_data = []\n        \n        for index, row in df.iterrows():\n            dia_data = {\n                'dni': str(row['DNI']),\n                'fecha': pd.to_datetime(row['Fecha']).date(),\n                'horario': row['Horario'],\n                'horas_trabajadas': float(row['Horas']) if 'Horas' in row else None,\n                'tipo_dia': row['Tipo_Dia'],\n                'skill': row['Skill'],\n            }\n            processed_data.append(dia_data)\n            \n        return processed_data\n    \n    @staticmethod\n    def sync_with_database(processed_data):\n        \"\"\"Sincroniza los datos procesados con la base de datos\"\"\"\n        try:\n            for dia_data in processed_data:\n                # Primero, asegurarse de que existe el asesor\n                asesor = Asesor.query.get(dia_data['dni'])\n                if not asesor:\n                    asesor = Asesor(\n                        dni=dia_data['dni'],\n                        nombre=dia_data['nombre'],\n                        lider=dia_data['lider'],\n                        skill=dia_data['skill']\n                    )\n                    db.session.add(asesor)\n                \n                # Verificar si el día no hábil ya existe\n                existing_dia = DiaNoHabil.query.filter_by(\n                    dni=dia_data['dni'],\n                    fecha=dia_data['fecha']\n                ).first()\n                \n                if existing_dia:\n                    # Actualizar si hay cambios\n                    for key, value in dia_data.items():\n                        setattr(existing_dia, key, value)\n                else:\n                    # Crear nuevo registro\n                    nuevo_dia = DiaNoHabil(**dia_data)\n                    db.session.add(nuevo_dia)\n            \n            db.session.commit()\n            return True, \"Datos sincronizados correctamente\"\n        except Exception as e:\n            db.session.rollback()\n            return False, f\"Error en sincronización: {str(e)}\"\n\n    @staticmethod\n    def get_monthly_stats(year, month):\n        \"\"\"Obtiene estadísticas mensuales\"\"\"\n        try:\n            # Consulta para obtener estadísticas\n            stats = db.session.query(\n                DiaNoHabil.skill,\n                db.func.count(DiaNoHabil.id_dia).label('total_dias'),\n                db.func.sum(DiaNoHabil.horas_trabajadas).label('total_horas')\n            ).filter(\n                db.extract('year', DiaNoHabil.fecha) == year,\n                db.extract('month', DiaNoHabil.fecha) == month\n            ).group_by(DiaNoHabil.skill).all()\n            \n            return stats\n        except Exception as e:\n            print(f\"Error obteniendo estadísticas: {str(e)}\")\n            return [] ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Asesor",
+                    "asname": null
+                },
+                {
+                    "name": "DiaNoHabil",
+                    "asname": null
+                },
+                {
+                    "name": "CodigoHorario",
+                    "asname": null
+                },
+                {
+                    "name": "Feriado",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "DNHProcessor",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 8,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "session"
+                    ]
+                },
+                {
+                    "nombre": "process_dnh_file",
+                    "lineno": 11,
+                    "docstring": "Procesa el archivo DNH y prepara los datos para la base de datos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "df"
+                    ]
+                },
+                {
+                    "nombre": "sync_with_database",
+                    "lineno": 29,
+                    "docstring": "Sincroniza los datos procesados con la base de datos",
+                    "decoradores": [
+                        "staticmethod"
+                    ],
+                    "argumentos": [
+                        "processed_data"
+                    ]
+                },
+                {
+                    "nombre": "get_monthly_stats",
+                    "lineno": 66,
+                    "docstring": "Obtiene estadísticas mensuales",
+                    "decoradores": [
+                        "staticmethod"
+                    ],
+                    "argumentos": [
+                        "year",
+                        "month"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "session"
+            ]
+        },
+        {
+            "nombre": "process_dnh_file",
+            "lineno": 11,
+            "docstring": "Procesa el archivo DNH y prepara los datos para la base de datos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "df"
+            ]
+        },
+        {
+            "nombre": "sync_with_database",
+            "lineno": 29,
+            "docstring": "Sincroniza los datos procesados con la base de datos",
+            "decoradores": [
+                "staticmethod"
+            ],
+            "argumentos": [
+                "processed_data"
+            ]
+        },
+        {
+            "nombre": "get_monthly_stats",
+            "lineno": 66,
+            "docstring": "Obtiene estadísticas mensuales",
+            "decoradores": [
+                "staticmethod"
+            ],
+            "argumentos": [
+                "year",
+                "month"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 9,
+            "targets": [
+                "self.session"
+            ],
+            "value": "session"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "processed_data"
+            ],
+            "value": "[]"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "dia_data"
+            ],
+            "value": "{'dni': str(row['DNI']), 'fecha': pd.to_datetime(row['Fecha']).date(), 'horario': row['Horario'], 'horas_trabajadas': float(row['Horas']) if 'Horas' in row else None, 'tipo_dia': row['Tipo_Dia'], 'skill': row['Skill']}"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "asesor"
+            ],
+            "value": "Asesor.query.get(dia_data['dni'])"
+        },
+        {
+            "lineno": 36,
+            "targets": [
+                "asesor"
+            ],
+            "value": "Asesor(dni=dia_data['dni'], nombre=dia_data['nombre'], lider=dia_data['lider'], skill=dia_data['skill'])"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "existing_dia"
+            ],
+            "value": "DiaNoHabil.query.filter_by(dni=dia_data['dni'], fecha=dia_data['fecha']).first()"
+        },
+        {
+            "lineno": 56,
+            "targets": [
+                "nuevo_dia"
+            ],
+            "value": "DiaNoHabil(**dia_data)"
+        },
+        {
+            "lineno": 70,
+            "targets": [
+                "stats"
+            ],
+            "value": "db.session.query(DiaNoHabil.skill, db.func.count(DiaNoHabil.id_dia).label('total_dias'), db.func.sum(DiaNoHabil.horas_trabajadas).label('total_horas')).filter(db.extract('year', DiaNoHabil.fecha) == year, db.extract('month', DiaNoHabil.fecha) == month).group_by(DiaNoHabil.skill).all()"
+        }
+    ]
+}

@@ -1,0 +1,110 @@
+{
+    "archivo": "__init__.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\database\\__init__.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from sqlalchemy import create_engine\nfrom sqlalchemy.orm import scoped_session, sessionmaker\nfrom sqlalchemy.ext.declarative import declarative_base\nfrom app.config.config import Config\n\n# Crear el engine de SQLAlchemy\nengine = create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=True)\n\n# Crear la sesión\ndb_session = scoped_session(\n    sessionmaker(\n        autocommit=False,\n        autoflush=False,\n        bind=engine\n    )\n)\n\n# Crear la base declarativa\nBase = declarative_base()\nBase.query = db_session.query_property()\n\ndef init_db():\n    \"\"\"Inicializa la base de datos y crea todas las tablas\"\"\"\n    import app.models  # Importa los modelos\n    Base.metadata.create_all(bind=engine)\n    print(\"Base de datos inicializada correctamente\")\n",
+    "imports": [
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "create_engine",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.orm",
+            "level": 0,
+            "names": [
+                {
+                    "name": "scoped_session",
+                    "asname": null
+                },
+                {
+                    "name": "sessionmaker",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.ext.declarative",
+            "level": 0,
+            "names": [
+                {
+                    "name": "declarative_base",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app.config.config",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Config",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "app.models",
+                    "asname": null
+                }
+            ],
+            "lineno": 24
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "init_db",
+            "lineno": 22,
+            "docstring": "Inicializa la base de datos y crea todas las tablas",
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 7,
+            "targets": [
+                "engine"
+            ],
+            "value": "create_engine(Config.SQLALCHEMY_DATABASE_URI, echo=True)"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "db_session"
+            ],
+            "value": "scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))"
+        },
+        {
+            "lineno": 19,
+            "targets": [
+                "Base"
+            ],
+            "value": "declarative_base()"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "Base.query"
+            ],
+            "value": "db_session.query_property()"
+        }
+    ]
+}

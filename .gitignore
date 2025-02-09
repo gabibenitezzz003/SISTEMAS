@@ -1,0 +1,51 @@
+# Ignorar entornos virtuales
+env/
+venv/
+
+# Archivos innecesarios
+*.dll
+*.lib
+*.safetensors
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar dependencias locales
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+node_modules/
+
+
+
+
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+# Node
+node_modules/
+build/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# IDE
+.vscode/
+.idea/
+# Cache de IA
+ia_gtr/cache/
+# Ignorar entornos virtuales
+env/
+venv/
+
+# Ignorar archivos grandes específicos
+*.dll
+*.lib
+*.safetensors
+*.pth

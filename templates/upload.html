@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Cargar Datos{% endblock %}
+
+{% block content %}
+<div class="bg-animation"></div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="neon-text mb-4">Cargar Datos</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="glass-card">
+                <h3>Subir Archivo</h3>
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p>Arrastra y suelta archivos aquí o</p>
+                    <label class="cyber-button">
+                        Seleccionar Archivo
+                        <input type="file" hidden>
+                    </label>
+                </div>
+                <div class="upload-progress">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="glass-card">
+                <h3>Historial de Cargas</h3>
+                <div class="upload-history">
+                    <div class="history-item">
+                        <div class="history-icon success">✓</div>
+                        <div class="history-content">
+                            <h4>horarios_enero.xlsx</h4>
+                            <p>Cargado exitosamente - 2024-01-25</p>
+                        </div>
+                    </div>
+                    <!-- ... más items ... -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

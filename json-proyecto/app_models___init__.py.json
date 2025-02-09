@@ -1,0 +1,334 @@
+{
+    "archivo": "__init__.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\models\\__init__.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from sqlalchemy import Column, Integer, String, Date, DateTime, Numeric, ForeignKey\nfrom app.database import Base\n\nclass Asesores(Base):\n    __tablename__ = 'asesores'\n    \n    dni = Column(String(10), primary_key=True)\n    nombre = Column(String(100))\n    lider = Column(String(100))\n    skill = Column(String(10))\n\n    def __repr__(self):\n        return f'<Asesor {self.nombre}>'\n\nclass CodigosHorarios(Base):\n    __tablename__ = 'codigos_horarios'\n    \n    id = Column(Integer, primary_key=True, autoincrement=True)\n    codigo = Column(String(50))\n    horas_base = Column(Numeric(4, 2))\n    color = Column(String(20))\n\n    def __repr__(self):\n        return f'<Codigo {self.codigo}>'\n\nclass DiasNoHabiles(Base):\n    __tablename__ = 'dias_no_habiles'\n    \n    id_dia = Column(Integer, primary_key=True, autoincrement=True)\n    dni = Column(String(10), ForeignKey('asesores.dni'))\n    fecha = Column(Date)\n    horario = Column(String(20))\n    horas_trabajadas = Column(Numeric(4, 1))\n    tipo_dia = Column(String(20))\n    skill = Column(String(10))\n    nombre = Column(String(100))\n    lider = Column(String(100))\n\n    def __repr__(self):\n        return f'<DiaNoHabil {self.fecha} - {self.nombre}>'\n\nclass Feriados(Base):\n    __tablename__ = 'feriados'\n    \n    id = Column(Integer, primary_key=True, autoincrement=True)\n    fecha = Column(Date, nullable=False)\n    descripcion = Column(String(255))\n\n    def __repr__(self):\n        return f'<Feriado {self.fecha}>' ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Column",
+                    "asname": null
+                },
+                {
+                    "name": "Integer",
+                    "asname": null
+                },
+                {
+                    "name": "String",
+                    "asname": null
+                },
+                {
+                    "name": "Date",
+                    "asname": null
+                },
+                {
+                    "name": "DateTime",
+                    "asname": null
+                },
+                {
+                    "name": "Numeric",
+                    "asname": null
+                },
+                {
+                    "name": "ForeignKey",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Base",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "Asesores",
+            "lineno": 4,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__repr__",
+                    "lineno": 12,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        },
+        {
+            "nombre": "CodigosHorarios",
+            "lineno": 15,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__repr__",
+                    "lineno": 23,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        },
+        {
+            "nombre": "DiasNoHabiles",
+            "lineno": 26,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__repr__",
+                    "lineno": 39,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        },
+        {
+            "nombre": "Feriados",
+            "lineno": 42,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__repr__",
+                    "lineno": 49,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__repr__",
+            "lineno": 12,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "__repr__",
+            "lineno": 23,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "__repr__",
+            "lineno": 39,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "__repr__",
+            "lineno": 49,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 5,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'asesores'"
+        },
+        {
+            "lineno": 7,
+            "targets": [
+                "dni"
+            ],
+            "value": "Column(String(10), primary_key=True)"
+        },
+        {
+            "lineno": 8,
+            "targets": [
+                "nombre"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 9,
+            "targets": [
+                "lider"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "skill"
+            ],
+            "value": "Column(String(10))"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'codigos_horarios'"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True, autoincrement=True)"
+        },
+        {
+            "lineno": 19,
+            "targets": [
+                "codigo"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "horas_base"
+            ],
+            "value": "Column(Numeric(4, 2))"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "color"
+            ],
+            "value": "Column(String(20))"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'dias_no_habiles'"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "id_dia"
+            ],
+            "value": "Column(Integer, primary_key=True, autoincrement=True)"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "dni"
+            ],
+            "value": "Column(String(10), ForeignKey('asesores.dni'))"
+        },
+        {
+            "lineno": 31,
+            "targets": [
+                "fecha"
+            ],
+            "value": "Column(Date)"
+        },
+        {
+            "lineno": 32,
+            "targets": [
+                "horario"
+            ],
+            "value": "Column(String(20))"
+        },
+        {
+            "lineno": 33,
+            "targets": [
+                "horas_trabajadas"
+            ],
+            "value": "Column(Numeric(4, 1))"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "tipo_dia"
+            ],
+            "value": "Column(String(20))"
+        },
+        {
+            "lineno": 35,
+            "targets": [
+                "skill"
+            ],
+            "value": "Column(String(10))"
+        },
+        {
+            "lineno": 36,
+            "targets": [
+                "nombre"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "lider"
+            ],
+            "value": "Column(String(100))"
+        },
+        {
+            "lineno": 43,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'feriados'"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True, autoincrement=True)"
+        },
+        {
+            "lineno": 46,
+            "targets": [
+                "fecha"
+            ],
+            "value": "Column(Date, nullable=False)"
+        },
+        {
+            "lineno": 47,
+            "targets": [
+                "descripcion"
+            ],
+            "value": "Column(String(255))"
+        }
+    ]
+}

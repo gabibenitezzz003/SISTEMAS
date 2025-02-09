@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GTR - Menú Principal</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/gss-nuevo.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="submenu-container">
+        <div class="header">
+            <img src="{{ url_for('static', filename='img/gss-nuevo.ico') }}" alt="GTR" class="logo-small">
+            <h1>Panel de Control</h1>
+            <div class="header-decoration">
+                <div class="line line-1"></div>
+                <div class="line line-2"></div>
+            </div>
+        </div>
+        
+        <div class="menu-grid">
+            <a href="{{ url_for('dashboard') }}" class="menu-card">
+                <div class="card-glow"></div>
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Dashboard</h3>
+                <p>Vista general del sistema</p>
+                <div class="card-decoration">
+                    <span class="dot dot-1"></span>
+                    <span class="dot dot-2"></span>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('shift_management') }}" class="menu-card">
+                <div class="card-glow"></div>
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Gestión de Turnos</h3>
+                <p>Administración de horarios</p>
+                <div class="card-decoration">
+                    <span class="dot dot-1"></span>
+                    <span class="dot dot-2"></span>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('ia_gtr') }}" class="menu-card">
+                <div class="card-glow"></div>
+                <i class="fas fa-robot"></i>
+                <h3>Asistente IA</h3>
+                <p>Soporte inteligente</p>
+                <div class="card-decoration">
+                    <span class="dot dot-1"></span>
+                    <span class="dot dot-2"></span>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('analytics') }}" class="menu-card">
+                <div class="card-glow"></div>
+                <i class="fas fa-chart-line"></i>
+                <h3>Analytics</h3>
+                <p>Análisis y reportes</p>
+                <div class="card-decoration">
+                    <span class="dot dot-1"></span>
+                    <span class="dot dot-2"></span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Script para animaciones suaves -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.menu-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html> 

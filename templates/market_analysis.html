@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Mercado - Movistar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary-color: #019df4;
+            --secondary-color: #00142F;
+            --accent-color: #00f2ff;
+            --success-color: #00d084;
+            --warning-color: #ffd700;
+            --danger-color: #ff4b4b;
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--secondary-color), #001f4d);
+            color: var(--text-color);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: rgba(1, 157, 244, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .province-selector select {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.8rem;
+            border-radius: 8px;
+            width: 250px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .province-selector select:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: var(--primary-color);
+        }
+
+        .province-selector select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .province-selector select option {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            padding: 10px;
+        }
+
+        .province-selector select option:hover {
+            background: var(--primary-color);
+        }
+
+        .time-filters button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .time-filters button.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .trend-up {
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            color: var(--danger-color);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-radius: 20px;
+            padding: 2rem;
+            height: 450px;
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: scale(1.02);
+        }
+
+        .metrics-detail {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--accent-color);
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Nuevos estilos para tabs */
+        .analysis-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-button {
+            background: var(--card-bg);
+            border: none;
+            color: var(--text-color);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            transform: translateY(-5px);
+        }
+
+        /* Animaciones personalizadas */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header" data-aos="fade-down">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="mdi mdi-chart-bar"></i> Análisis de Mercado Provincial - Movistar</h1>
+                <div class="d-flex">
+                    <button class="btn btn-outline-light me-2">
+                        <i class="mdi mdi-download"></i> Exportar Datos
+                    </button>
+                    <button class="btn btn-outline-light">
+                        <i class="mdi mdi-refresh"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <div class="controls-container">
+                <div class="province-selector">
+                    <select id="provinciaSelector" class="form-select" onchange="actualizarDatosProvincia()">
+                        <option value="">Seleccione una provincia</option>
+                        <option value="Buenos Aires">Buenos Aires</option>
+                        <option value="CABA">CABA</option>
+                        <option value="Catamarca">Catamarca</option>
+                        <option value="Chaco">Chaco</option>
+                        <option value="Chubut">Chubut</option>
+                        <option value="Córdoba">Córdoba</option>
+                        <option value="Corrientes">Corrientes</option>
+                        <option value="Entre Ríos">Entre Ríos</option>
+                        <option value="Formosa">Formosa</option>
+                        <option value="Jujuy">Jujuy</option>
+                        <option value="La Pampa">La Pampa</option>
+                        <option value="La Rioja">La Rioja</option>
+                        <option value="Mendoza">Mendoza</option>
+                        <option value="Misiones">Misiones</option>
+                        <option value="Neuquén">Neuquén</option>
+                        <option value="Río Negro">Río Negro</option>
+                        <option value="Salta">Salta</option>
+                        <option value="San Juan">San Juan</option>
+                        <option value="San Luis">San Luis</option>
+                        <option value="Santa Cruz">Santa Cruz</option>
+                        <option value="Santa Fe">Santa Fe</option>
+                        <option value="Santiago del Estero">Santiago del Estero</option>
+                        <option value="Tierra del Fuego">Tierra del Fuego</option>
+                        <option value="Tucumán">Tucumán</option>
+                    </select>
+                </div>
+
+                <div class="time-filters">
+                    <button class="active" data-period="month">Mes Actual</button>
+                    <button data-period="quarter">Último Trimestre</button>
+                    <button data-period="year">Último Año</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs de análisis -->
+        <div class="analysis-tabs" data-aos="fade-up">
+            <button class="tab-button active" data-tab="general">
+                <i class="mdi mdi-chart-box"></i> General
+            </button>
+            <button class="tab-button" data-tab="competencia">
+                <i class="mdi mdi-account-group"></i> Competencia
+            </button>
+            <button class="tab-button" data-tab="tendencias">
+                <i class="mdi mdi-trending-up"></i> Tendencias
+            </button>
+            <button class="tab-button" data-tab="predicciones">
+                <i class="mdi mdi-crystal-ball"></i> Predicciones
+            </button>
+        </div>
+
+        <!-- KPIs mejorados -->
+        <div class="kpi-container">
+            <div class="kpi-card" data-aos="zoom-in" data-aos-delay="100">
+                <h3>Market Share</h3>
+                <div class="kpi-value" id="marketShareValue">32.5%</div>
+                <div class="kpi-trend trend-up">
+                    <i class="mdi mdi-arrow-up"></i>
+                    <span>2.3% vs mes anterior</span>
+                </div>
+                <div id="marketShareChart"></div>
+            </div>
+            <!-- Agregar más KPI cards similares -->
+        </div>
+
+        <!-- Gráficos mejorados -->
+        <div class="charts-container">
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="200">
+                <h3>Evolución Market Share</h3>
+                <div id="evolutionChart"></div>
+            </div>
+            
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="300">
+                <h3>Comparativa de Operadores</h3>
+                <div id="operadoresChart"></div>
+            </div>
+
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="400">
+                <h3>Tendencia de Ingresos</h3>
+                <div id="ingresosChart"></div>
+            </div>
+
+            <div class="chart-card" data-aos="fade-up" data-aos-delay="500">
+                <h3>Satisfacción del Cliente</h3>
+                <div id="satisfaccionChart"></div>
+            </div>
+        </div>
+
+        <!-- Métricas Detalladas -->
+        <div class="metrics-detail">
+            <h3>Métricas Detalladas</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="metric-item">
+                        <span>Penetración de Mercado</span>
+                        <span id="penetracionMercado">-</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Churn Rate</span>
+                        <span id="churnRate">-</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>ARPU</span>
+                        <span id="arpu">-</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-item">
+                        <span>NPS</span>
+                        <span id="nps">-</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Calidad de Red</span>
+                        <span id="calidadRed">-</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Cuota de Mercado Digital</span>
+                        <span id="cuotaDigital">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // Inicializar AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Configuración de gráficos
+        function initializeCharts() {
+            // Gráfico de Evolución
+            const evolutionOptions = {
+                series: [{
+                    name: 'Market Share',
+                    data: [30, 32, 33, 32.5, 31.8, 32.5, 33.2, 34.1, 33.8, 34.5, 35.2, 35.8]
+                }],
+                chart: {
+                    type: 'area',
+                    height: 350,
+                    toolbar: {
+                        show: true
+                    },
+                    animations: {
+                        enabled: true,
+                        easing: 'easeinout',
+                        speed: 800
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3
+                    }
+                },
+                xaxis: {
+                    categories: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        }
+                    }
+                },
+                colors: ['#019df4']
+            };
+
+            // Gráfico de Operadores
+            const operadoresOptions = {
+                series: [{
+                    name: 'Movistar',
+                    data: [35, 34, 36, 35, 32, 33]
+                }, {
+                    name: 'Personal',
+                    data: [32, 31, 30, 30, 31, 32]
+                }, {
+                    name: 'Claro',
+                    data: [30, 32, 31, 32, 33, 31]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    stacked: false,
+                    toolbar: {
+                        show: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        borderRadius: 10
+                    }
+                },
+                xaxis: {
+                    categories: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2'],
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        }
+                    }
+                },
+                colors: ['#019df4', '#ff6b6b', '#51cf66']
+            };
+
+            // Gráfico de Ingresos
+            const ingresosOptions = {
+                series: [{
+                    name: 'Ingresos',
+                    data: [2100, 2300, 2500, 2700, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4500]
+                }],
+                chart: {
+                    type: 'line',
+                    height: 350,
+                    toolbar: {
+                        show: true
+                    }
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                markers: {
+                    size: 4
+                },
+                xaxis: {
+                    categories: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#ffffff'
+                        },
+                        formatter: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                },
+                colors: ['#00f2ff']
+            };
+
+            // Gráfico de Satisfacción
+            const satisfaccionOptions = {
+                series: [75],
+                chart: {
+                    height: 350,
+                    type: 'radialBar',
+                    toolbar: {
+                        show: true
+                    }
+                },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -135,
+                        endAngle: 225,
+                        hollow: {
+                            margin: 0,
+                            size: '70%',
+                            background: 'transparent'
+                        },
+                        track: {
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            strokeWidth: '67%',
+                            margin: 0
+                        },
+                        dataLabels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                fontSize: '16px',
+                                color: '#ffffff',
+                                offsetY: -10
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '36px',
+                                color: '#ffffff',
+                                offsetY: 5,
+                                formatter: function(val) {
+                                    return val + '%';
+                                }
+                            }
+                        }
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: 'horizontal',
+                        shadeIntensity: 0.5,
+                        gradientToColors: ['#00f2ff'],
+                        stops: [0, 100]
+                    }
+                },
+                stroke: {
+                    lineCap: 'round'
+                },
+                labels: ['Satisfacción']
+            };
+
+            // Renderizar todos los gráficos
+            new ApexCharts(document.querySelector("#evolutionChart"), evolutionOptions).render();
+            new ApexCharts(document.querySelector("#operadoresChart"), operadoresOptions).render();
+            new ApexCharts(document.querySelector("#ingresosChart"), ingresosOptions).render();
+            new ApexCharts(document.querySelector("#satisfaccionChart"), satisfaccionOptions).render();
+        }
+
+        // Función para actualizar datos con animaciones
+        function actualizarDatosConAnimacion(elemento, valorNuevo) {
+            const valorActual = parseFloat(elemento.textContent);
+            const duracion = 1000; // 1 segundo
+            const pasos = 60;
+            const incremento = (valorNuevo - valorActual) / pasos;
+            let paso = 0;
+
+            const animacion = setInterval(() => {
+                paso++;
+                const valorIntermedio = valorActual + (incremento * paso);
+                elemento.textContent = valorIntermedio.toFixed(1) + '%';
+
+                if (paso >= pasos) {
+                    clearInterval(animacion);
+                    elemento.textContent = valorNuevo + '%';
+                }
+            }, duracion / pasos);
+        }
+
+        // Manejador de tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                // Actualizar contenido según tab
+                actualizarContenidoTab(button.dataset.tab);
+            });
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            const urlParams = new URLSearchParams(window.location.search);
+            const provinciaParam = urlParams.get('provincia');
+            
+            if (provinciaParam) {
+                document.getElementById('provinciaSelector').value = provinciaParam;
+                actualizarDatosProvincia();
+            }
+        });
+
+        // Función para mostrar errores
+        function mostrarError(mensaje) {
+            // Implementar notificación de error
+        }
+
+        // Actualizar datos según la provincia seleccionada
+        async function actualizarDatosProvincia() {
+            const provincia = document.getElementById('provinciaSelector').value;
+            if (!provincia) return;
+
+            mostrarCargando();
+
+            try {
+                const response = await fetch(`/api/market-analysis/${provincia}`);
+                const data = await response.json();
+                
+                // Actualizar todos los gráficos con los nuevos datos
+                actualizarGraficos(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cargar los datos');
+            } finally {
+                ocultarCargando();
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,77 @@
+{
+    "archivo": "config.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\config\\config.py",
+    "docstring_modulo": null,
+    "contenido_completo": "import os\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nclass Config:\n    # Configuración para MySQL\n    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', \n        'mysql+pymysql://root:password@localhost/gestion_dnh2')\n    SQLALCHEMY_TRACK_MODIFICATIONS = False\n    SECRET_KEY = os.getenv('SECRET_KEY', 'dev')\n    \n    # Configuración adicional\n    TEMPLATES_AUTO_RELOAD = True\n    DEBUG = True\n",
+    "imports": [
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "dotenv",
+            "level": 0,
+            "names": [
+                {
+                    "name": "load_dotenv",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "Config",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        }
+    ],
+    "funciones": [],
+    "asignaciones": [
+        {
+            "lineno": 8,
+            "targets": [
+                "SQLALCHEMY_DATABASE_URI"
+            ],
+            "value": "os.getenv('DATABASE_URL', 'mysql+pymysql://root:password@localhost/gestion_dnh2')"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "SQLALCHEMY_TRACK_MODIFICATIONS"
+            ],
+            "value": "False"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "SECRET_KEY"
+            ],
+            "value": "os.getenv('SECRET_KEY', 'dev')"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "TEMPLATES_AUTO_RELOAD"
+            ],
+            "value": "True"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "DEBUG"
+            ],
+            "value": "True"
+        }
+    ]
+}

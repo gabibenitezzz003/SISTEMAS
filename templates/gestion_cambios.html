@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Cambios - GTR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion_cambios.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestor de Cambios</h1>
+            <div class="date-picker">
+                <input type="date" id="fechaCambio" value="{{ today }}">
+            </div>
+        </header>
+
+        <div class="exchange-container">
+            <!-- Panel Izquierdo: Selección de Asesor 1 -->
+            <div class="advisor-panel">
+                <h3>Asesor 1</h3>
+                <div class="advisor-selector">
+                    <select id="asesor1" class="advisor-select">
+                        <option value="">Seleccionar asesor...</option>
+                        {% for asesor in asesores %}
+                        <option value="{{ asesor.id }}" data-skill="{{ asesor.skill }}" data-horario="{{ asesor.horario }}">
+                            {{ asesor.nombre }} - {{ asesor.skill }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <div class="schedule-selector">
+                        <label>Nuevo Horario:</label>
+                        <select id="horario1" class="schedule-select">
+                            <option value="">Seleccionar horario...</option>
+                            {% for horario in horarios %}
+                            <option value="{{ horario.id }}" data-horas="{{ horario.horas }}">
+                                {{ horario.rango }} ({{ horario.horas }}hs)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flecha de Intercambio -->
+            <div class="exchange-arrow">
+                ⇄
+            </div>
+
+            <!-- Panel Derecho: Selección de Asesor 2 -->
+            <div class="advisor-panel">
+                <h3>Asesor 2</h3>
+                <div class="advisor-selector">
+                    <select id="asesor2" class="advisor-select">
+                        <option value="">Seleccionar asesor...</option>
+                        {% for asesor in asesores %}
+                        <option value="{{ asesor.id }}" data-skill="{{ asesor.skill }}" data-horario="{{ asesor.horario }}">
+                            {{ asesor.nombre }} - {{ asesor.skill }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <div class="schedule-selector">
+                        <label>Nuevo Horario:</label>
+                        <select id="horario2" class="schedule-select">
+                            <option value="">Seleccionar horario...</option>
+                            {% for horario in horarios %}
+                            <option value="{{ horario.id }}" data-horas="{{ horario.horas }}">
+                                {{ horario.rango }} ({{ horario.horas }}hs)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Validación -->
+        <div class="validation-panel">
+            <h3>Validación del Cambio</h3>
+            <div id="validationMessages" class="validation-messages">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="action-buttons">
+                <button id="btnCancelar" class="btn btn-cancel">Cancelar</button>
+                <button id="btnConfirmar" class="btn btn-confirm" disabled>Confirmar Cambio</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/gestion_cambios.js') }}"></script>
+</body>
+</html> 

@@ -1,0 +1,111 @@
+{
+    "archivo": "init_test_data.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\scripts\\init_test_data.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from app import create_app\nfrom app.database import db_session\nfrom app.models import Employee, Shift\nfrom datetime import datetime, timedelta\n\ndef init_test_data():\n    # Crear algunos empleados de prueba\n    employees = [\n        Employee(name=\"Juan Pérez\", skill=\"COM\"),\n        Employee(name=\"María García\", skill=\"CROSS\"),\n        Employee(name=\"Carlos López\", skill=\"COM\"),\n        Employee(name=\"Ana Martínez\", skill=\"CROSS\")\n    ]\n    \n    # Agregar empleados a la base de datos\n    for employee in employees:\n        db_session.add(employee)\n    db_session.commit()\n    \n    # Crear algunos turnos de prueba\n    today = datetime.now().date()\n    for i in range(7):  # Crear turnos para la próxima semana\n        date = today + timedelta(days=i)\n        for employee in employees:\n            shift = Shift(\n                employee=employee,\n                date=date,\n                shift_type=\"Mañana\" if i % 3 == 0 else \"Tarde\" if i % 3 == 1 else \"Noche\",\n                is_weekend=i >= 5  # Sábado y domingo\n            )\n            db_session.add(shift)\n    \n    db_session.commit()\n    print(\"Datos de prueba inicializados correctamente\")\n\nif __name__ == \"__main__\":\n    app = create_app()\n    with app.app_context():\n        init_test_data() ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "app",
+            "level": 0,
+            "names": [
+                {
+                    "name": "create_app",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Employee",
+                    "asname": null
+                },
+                {
+                    "name": "Shift",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "init_test_data",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 8,
+            "targets": [
+                "employees"
+            ],
+            "value": "[Employee(name='Juan Pérez', skill='COM'), Employee(name='María García', skill='CROSS'), Employee(name='Carlos López', skill='COM'), Employee(name='Ana Martínez', skill='CROSS')]"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 23,
+            "targets": [
+                "date"
+            ],
+            "value": "today + timedelta(days=i)"
+        },
+        {
+            "lineno": 25,
+            "targets": [
+                "shift"
+            ],
+            "value": "Shift(employee=employee, date=date, shift_type='Mañana' if i % 3 == 0 else 'Tarde' if i % 3 == 1 else 'Noche', is_weekend=i >= 5)"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "app"
+            ],
+            "value": "create_app()"
+        }
+    ]
+}

@@ -1,0 +1,126 @@
+{
+    "archivo": "notification_system.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\notification_system.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime\nimport asyncio\nfrom email.mime.text import MIMEText\nfrom email.mime.multipart import MIMEMultipart\nimport smtplib\n\nclass NotificationSystem:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.websocket_clients = set()\n        \n    async def start(self):\n        \"\"\"Inicia el sistema de notificaciones\"\"\"\n        while True:\n            await self.check_notifications()\n            await asyncio.sleep(60)  # Revisar cada minuto\n            \n    async def check_notifications(self):\n        \"\"\"Revisa y envía notificaciones pendientes\"\"\"\n        notifications = self.get_pending_notifications()\n        \n        for notification in notifications:\n            await self.send_notification(notification)\n            \n    async def send_notification(self, notification):\n        \"\"\"Envía una notificación por múltiples canales\"\"\"\n        # Enviar por WebSocket\n        if notification.type == 'urgent':\n            await self.broadcast_websocket(notification)\n            \n        # Enviar por email\n        if notification.email_required:\n            await self.send_email(notification)\n            \n        # Enviar por Slack/Teams si está configurado\n        if notification.slack_webhook:\n            await self.send_slack(notification)\n            \n    async def broadcast_websocket(self, notification):\n        \"\"\"Envía notificación a todos los clientes conectados\"\"\"\n        message = {\n            'type': 'notification',\n            'content': notification.content,\n            'level': notification.level,\n            'timestamp': datetime.now().isoformat()\n        }\n        \n        for client in self.websocket_clients:\n            try:\n                await client.send_json(message)\n            except Exception:\n                self.websocket_clients.remove(client) ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "asyncio",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "email.mime.text",
+            "level": 0,
+            "names": [
+                {
+                    "name": "MIMEText",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "email.mime.multipart",
+            "level": 0,
+            "names": [
+                {
+                    "name": "MIMEMultipart",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "smtplib",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "NotificationSystem",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 8,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 9,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "self.websocket_clients"
+            ],
+            "value": "set()"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "notifications"
+            ],
+            "value": "self.get_pending_notifications()"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "message"
+            ],
+            "value": "{'type': 'notification', 'content': notification.content, 'level': notification.level, 'timestamp': datetime.now().isoformat()}"
+        }
+    ]
+}

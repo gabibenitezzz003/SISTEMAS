@@ -1,0 +1,323 @@
+{
+    "archivo": "analytics.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\routes\\analytics.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import jsonify, request\nfrom app.routes import analytics_bp\nfrom app.models import DiasNoHabiles, Asesores, CodigosHorarios\nfrom sqlalchemy import func\nfrom datetime import datetime, timedelta\nimport pandas as pd\nimport numpy as np\n\n@analytics_bp.route('/dashboard', methods=['GET'])\ndef get_analytics_dashboard():\n    # Período de análisis\n    end_date = datetime.now().date()\n    start_date = end_date - timedelta(days=90)\n    \n    # Obtener datos\n    shifts = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha.between(start_date, end_date)\n    ).all()\n    \n    # Convertir a DataFrame\n    df = pd.DataFrame([{\n        'fecha': s.fecha,\n        'skill': s.skill,\n        'tipo_dia': s.tipo_dia,\n        'horario': s.horario,\n        'horas_trabajadas': float(s.horas_trabajadas) if s.horas_trabajadas else 0\n    } for s in shifts])\n    \n    # Análisis\n    analytics = {\n        'general_stats': {\n            'total_shifts': len(df),\n            'unique_employees': df['nombre'].nunique(),\n            'avg_hours_per_shift': df['horas_trabajadas'].mean()\n        },\n        'trends': calculate_trends(df),\n        'predictions': generate_predictions(df),\n        'distribution': calculate_distribution(df)\n    }\n    \n    return jsonify(analytics)\n\n@analytics_bp.route('/export', methods=['GET'])\ndef export_analytics():\n    format_type = request.args.get('format', 'json')\n    start_date = request.args.get('start_date')\n    end_date = request.args.get('end_date')\n    \n    # Convertir fechas\n    try:\n        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()\n        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()\n    except (ValueError, TypeError):\n        return jsonify({'error': 'Fechas inválidas'}), 400\n    \n    # Obtener datos\n    data = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha.between(start_date, end_date)\n    ).all()\n    \n    if format_type == 'csv':\n        # Implementar exportación CSV\n        pass\n    else:\n        return jsonify([{\n            'fecha': d.fecha.strftime('%Y-%m-%d'),\n            'nombre': d.nombre,\n            'skill': d.skill,\n            'horario': d.horario,\n            'tipo_dia': d.tipo_dia,\n            'horas_trabajadas': str(d.horas_trabajadas)\n        } for d in data])\n\n@analytics_bp.route('/metrics', methods=['GET'])\ndef get_metrics():\n    # Métricas clave de rendimiento\n    today = datetime.now().date()\n    start_of_month = today.replace(day=1)\n    \n    metrics = {\n        'monthly_stats': calculate_monthly_stats(start_of_month),\n        'efficiency_metrics': calculate_efficiency_metrics(start_of_month),\n        'coverage_analysis': analyze_coverage(start_of_month)\n    }\n    \n    return jsonify(metrics)\n\ndef calculate_trends(df):\n    # Calcular tendencias\n    daily_counts = df.groupby('fecha').size()\n    trend = np.polyfit(range(len(daily_counts)), daily_counts, 1)\n    \n    return {\n        'slope': float(trend[0]),\n        'daily_counts': daily_counts.to_dict(),\n        'trend_direction': 'up' if trend[0] > 0 else 'down'\n    }\n\ndef generate_predictions(df):\n    # Generar predicciones simples\n    avg_daily = df.groupby('fecha').size().mean()\n    std_daily = df.groupby('fecha').size().std()\n    \n    return {\n        'expected_daily_shifts': round(avg_daily, 2),\n        'confidence_interval': [\n            round(avg_daily - std_daily, 2),\n            round(avg_daily + std_daily, 2)\n        ]\n    }\n\ndef calculate_distribution(df):\n    return {\n        'by_skill': df['skill'].value_counts().to_dict(),\n        'by_day_type': df['tipo_dia'].value_counts().to_dict(),\n        'by_schedule': df['horario'].value_counts().to_dict()\n    }\n\ndef calculate_monthly_stats(start_date):\n    \"\"\"Calcula estadísticas mensuales\"\"\"\n    stats = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha >= start_date\n    ).with_entities(\n        func.count().label('total_shifts'),\n        func.count(func.distinct(DiasNoHabiles.dni)).label('unique_employees')\n    ).first()\n    \n    return {\n        'total_shifts': stats.total_shifts,\n        'unique_employees': stats.unique_employees,\n        'avg_shifts_per_day': stats.total_shifts / 30  # Promedio mensual\n    }\n\ndef calculate_efficiency_metrics(start_date):\n    \"\"\"Calcula métricas de eficiencia\"\"\"\n    return {\n        'coverage_rate': 0.85,  # Ejemplo\n        'schedule_adherence': 0.92,  # Ejemplo\n        'utilization': 0.88  # Ejemplo\n    }\n\ndef analyze_coverage(start_date):\n    \"\"\"Analiza la cobertura de turnos\"\"\"\n    return {\n        'weekday_coverage': 0.95,  # Ejemplo\n        'weekend_coverage': 0.82,  # Ejemplo\n        'peak_hours_coverage': 0.88  # Ejemplo\n    } ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "jsonify",
+                    "asname": null
+                },
+                {
+                    "name": "request",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.routes",
+            "level": 0,
+            "names": [
+                {
+                    "name": "analytics_bp",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "DiasNoHabiles",
+                    "asname": null
+                },
+                {
+                    "name": "Asesores",
+                    "asname": null
+                },
+                {
+                    "name": "CodigosHorarios",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "func",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 6
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "numpy",
+                    "asname": "np"
+                }
+            ],
+            "lineno": 7
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "get_analytics_dashboard",
+            "lineno": 10,
+            "docstring": null,
+            "decoradores": [
+                "analytics_bp.route('/dashboard', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "export_analytics",
+            "lineno": 44,
+            "docstring": null,
+            "decoradores": [
+                "analytics_bp.route('/export', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_metrics",
+            "lineno": 75,
+            "docstring": null,
+            "decoradores": [
+                "analytics_bp.route('/metrics', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "calculate_trends",
+            "lineno": 88,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "df"
+            ]
+        },
+        {
+            "nombre": "generate_predictions",
+            "lineno": 99,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "df"
+            ]
+        },
+        {
+            "nombre": "calculate_distribution",
+            "lineno": 112,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "df"
+            ]
+        },
+        {
+            "nombre": "calculate_monthly_stats",
+            "lineno": 119,
+            "docstring": "Calcula estadísticas mensuales",
+            "decoradores": [],
+            "argumentos": [
+                "start_date"
+            ]
+        },
+        {
+            "nombre": "calculate_efficiency_metrics",
+            "lineno": 134,
+            "docstring": "Calcula métricas de eficiencia",
+            "decoradores": [],
+            "argumentos": [
+                "start_date"
+            ]
+        },
+        {
+            "nombre": "analyze_coverage",
+            "lineno": 142,
+            "docstring": "Analiza la cobertura de turnos",
+            "decoradores": [],
+            "argumentos": [
+                "start_date"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 12,
+            "targets": [
+                "end_date"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "start_date"
+            ],
+            "value": "end_date - timedelta(days=90)"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "shifts"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha.between(start_date, end_date)).all()"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.DataFrame([{'fecha': s.fecha, 'skill': s.skill, 'tipo_dia': s.tipo_dia, 'horario': s.horario, 'horas_trabajadas': float(s.horas_trabajadas) if s.horas_trabajadas else 0} for s in shifts])"
+        },
+        {
+            "lineno": 30,
+            "targets": [
+                "analytics"
+            ],
+            "value": "{'general_stats': {'total_shifts': len(df), 'unique_employees': df['nombre'].nunique(), 'avg_hours_per_shift': df['horas_trabajadas'].mean()}, 'trends': calculate_trends(df), 'predictions': generate_predictions(df), 'distribution': calculate_distribution(df)}"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "format_type"
+            ],
+            "value": "request.args.get('format', 'json')"
+        },
+        {
+            "lineno": 46,
+            "targets": [
+                "start_date"
+            ],
+            "value": "request.args.get('start_date')"
+        },
+        {
+            "lineno": 47,
+            "targets": [
+                "end_date"
+            ],
+            "value": "request.args.get('end_date')"
+        },
+        {
+            "lineno": 51,
+            "targets": [
+                "start_date"
+            ],
+            "value": "datetime.strptime(start_date, '%Y-%m-%d').date()"
+        },
+        {
+            "lineno": 52,
+            "targets": [
+                "end_date"
+            ],
+            "value": "datetime.strptime(end_date, '%Y-%m-%d').date()"
+        },
+        {
+            "lineno": 57,
+            "targets": [
+                "data"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha.between(start_date, end_date)).all()"
+        },
+        {
+            "lineno": 77,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 78,
+            "targets": [
+                "start_of_month"
+            ],
+            "value": "today.replace(day=1)"
+        },
+        {
+            "lineno": 80,
+            "targets": [
+                "metrics"
+            ],
+            "value": "{'monthly_stats': calculate_monthly_stats(start_of_month), 'efficiency_metrics': calculate_efficiency_metrics(start_of_month), 'coverage_analysis': analyze_coverage(start_of_month)}"
+        },
+        {
+            "lineno": 90,
+            "targets": [
+                "daily_counts"
+            ],
+            "value": "df.groupby('fecha').size()"
+        },
+        {
+            "lineno": 91,
+            "targets": [
+                "trend"
+            ],
+            "value": "np.polyfit(range(len(daily_counts)), daily_counts, 1)"
+        },
+        {
+            "lineno": 101,
+            "targets": [
+                "avg_daily"
+            ],
+            "value": "df.groupby('fecha').size().mean()"
+        },
+        {
+            "lineno": 102,
+            "targets": [
+                "std_daily"
+            ],
+            "value": "df.groupby('fecha').size().std()"
+        },
+        {
+            "lineno": 121,
+            "targets": [
+                "stats"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha >= start_date).with_entities(func.count().label('total_shifts'), func.count(func.distinct(DiasNoHabiles.dni)).label('unique_employees')).first()"
+        }
+    ]
+}

@@ -1,0 +1,189 @@
+{
+    "archivo": "sync_data.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\sync_data.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from google.oauth2.credentials import Credentials\nfrom googleapiclient.discovery import build\nfrom sqlalchemy.orm import sessionmaker\nfrom app.database import engine\nfrom app.models import Employee, Shift, WeekendSchedule\nimport pandas as pd\n\ndef sync_with_sheets():\n    # Configuración de credenciales de Google Sheets\n    SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']\n    creds = Credentials.from_authorized_user_file('token.json', SCOPES)\n    \n    service = build('sheets', 'v4', credentials=creds)\n    \n    # ID de tu hoja de cálculo y rango\n    SPREADSHEET_ID = 'tu_id_de_spreadsheet'\n    RANGE_NAME = 'DNH!A:Z'  # Ajusta según tu hoja\n    \n    sheet = service.spreadsheets()\n    result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()\n    values = result.get('values', [])\n    \n    # Convertir a DataFrame\n    df = pd.DataFrame(values[1:], columns=values[0])\n    \n    # Sincronizar con la base de datos\n    Session = sessionmaker(bind=engine)\n    session = Session()\n    \n    try:\n        # Actualizar empleados y turnos\n        for _, row in df.iterrows():\n            employee = session.query(Employee).filter_by(name=row['Nombre']).first()\n            if not employee:\n                employee = Employee(name=row['Nombre'], skill=row['Skill'])\n                session.add(employee)\n            \n            # Crear o actualizar turnos\n            # ... lógica para procesar turnos ...\n            \n        session.commit()\n    except Exception as e:\n        session.rollback()\n        raise e\n    finally:\n        session.close() ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "google.oauth2.credentials",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Credentials",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "googleapiclient.discovery",
+            "level": 0,
+            "names": [
+                {
+                    "name": "build",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.orm",
+            "level": 0,
+            "names": [
+                {
+                    "name": "sessionmaker",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "engine",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Employee",
+                    "asname": null
+                },
+                {
+                    "name": "Shift",
+                    "asname": null
+                },
+                {
+                    "name": "WeekendSchedule",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 6
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "sync_with_sheets",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 10,
+            "targets": [
+                "SCOPES"
+            ],
+            "value": "['https://www.googleapis.com/auth/spreadsheets.readonly']"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "creds"
+            ],
+            "value": "Credentials.from_authorized_user_file('token.json', SCOPES)"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "service"
+            ],
+            "value": "build('sheets', 'v4', credentials=creds)"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "SPREADSHEET_ID"
+            ],
+            "value": "'tu_id_de_spreadsheet'"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "RANGE_NAME"
+            ],
+            "value": "'DNH!A:Z'"
+        },
+        {
+            "lineno": 19,
+            "targets": [
+                "sheet"
+            ],
+            "value": "service.spreadsheets()"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "result"
+            ],
+            "value": "sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "values"
+            ],
+            "value": "result.get('values', [])"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.DataFrame(values[1:], columns=values[0])"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "Session"
+            ],
+            "value": "sessionmaker(bind=engine)"
+        },
+        {
+            "lineno": 28,
+            "targets": [
+                "session"
+            ],
+            "value": "Session()"
+        },
+        {
+            "lineno": 33,
+            "targets": [
+                "employee"
+            ],
+            "value": "session.query(Employee).filter_by(name=row['Nombre']).first()"
+        },
+        {
+            "lineno": 35,
+            "targets": [
+                "employee"
+            ],
+            "value": "Employee(name=row['Nombre'], skill=row['Skill'])"
+        }
+    ]
+}

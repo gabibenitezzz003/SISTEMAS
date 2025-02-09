@@ -1,0 +1,155 @@
+{
+    "archivo": "load_initial_data.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\scripts\\load_initial_data.py",
+    "docstring_modulo": null,
+    "contenido_completo": "import os\nimport sys\nfrom pathlib import Path\n\n# Agregar el directorio raíz del proyecto al PYTHONPATH\nproject_root = Path(__file__).parent.parent\nsys.path.append(str(project_root))\n\nfrom app import create_app\nfrom app.database import db_session\nfrom app.models import Asesores, CodigosHorarios\n\ndef load_codigos_horarios():\n    codigos = [\n        {'codigo': 'LICENCIA', 'horas_base': 6.00, 'color': '#FFFF00'},\n        {'codigo': 'FALTA INJUSTIFICADA', 'horas_base': 6.00, 'color': '#FFA500'},\n        {'codigo': 'CERTIFICADO', 'horas_base': 6.00, 'color': '#00FF00'},\n        {'codigo': 'BAJA', 'horas_base': 0.00, 'color': '#FF0000'},\n        {'codigo': 'PRESENTE', 'horas_base': 12.00, 'color': '#0000FF'},\n        {'codigo': 'ASESOR MESSI', 'horas_base': 5.00, 'color': '#FFD700'},\n        {'codigo': 'CAMBIO DE ROL', 'horas_base': 5.00, 'color': '#FF0000'},\n        {'codigo': 'CAMBIO DE PRODUCTO', 'horas_base': 0.00, 'color': '#000000'},\n        {'codigo': 'DEVOLUCIÓN DE HORAS', 'horas_base': None, 'color': '#800080'}\n    ]\n    \n    for codigo_data in codigos:\n        codigo = CodigosHorarios(**codigo_data)\n        db_session.add(codigo)\n    \n    try:\n        db_session.commit()\n        print(\"Códigos horarios cargados correctamente\")\n    except Exception as e:\n        db_session.rollback()\n        print(f\"Error al cargar códigos horarios: {e}\")\n\ndef load_asesores_from_dias():\n    # Obtener asesores únicos de dias_no_habiles\n    query = \"\"\"\n    SELECT DISTINCT dni, nombre, lider, skill \n    FROM dias_no_habiles \n    WHERE dni IS NOT NULL\n    \"\"\"\n    \n    result = db_session.execute(query)\n    \n    for row in result:\n        if not Asesores.query.filter_by(dni=row.dni).first():\n            asesor = Asesores(\n                dni=row.dni,\n                nombre=row.nombre,\n                lider=row.lider,\n                skill=row.skill\n            )\n            db_session.add(asesor)\n    \n    try:\n        db_session.commit()\n        print(\"Asesores cargados correctamente desde dias_no_habiles\")\n    except Exception as e:\n        db_session.rollback()\n        print(f\"Error al cargar asesores: {e}\")\n\ndef main():\n    app = create_app()\n    with app.app_context():\n        print(\"Iniciando carga de datos iniciales...\")\n        load_codigos_horarios()\n        load_asesores_from_dias()\n        print(\"Proceso completado\")\n\nif __name__ == \"__main__\":\n    main() ",
+    "imports": [
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "sys",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "pathlib",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Path",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app",
+            "level": 0,
+            "names": [
+                {
+                    "name": "create_app",
+                    "asname": null
+                }
+            ],
+            "lineno": 9
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 10
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Asesores",
+                    "asname": null
+                },
+                {
+                    "name": "CodigosHorarios",
+                    "asname": null
+                }
+            ],
+            "lineno": 11
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "load_codigos_horarios",
+            "lineno": 13,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        },
+        {
+            "nombre": "load_asesores_from_dias",
+            "lineno": 37,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        },
+        {
+            "nombre": "main",
+            "lineno": 64,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "project_root"
+            ],
+            "value": "Path(__file__).parent.parent"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "codigos"
+            ],
+            "value": "[{'codigo': 'LICENCIA', 'horas_base': 6.0, 'color': '#FFFF00'}, {'codigo': 'FALTA INJUSTIFICADA', 'horas_base': 6.0, 'color': '#FFA500'}, {'codigo': 'CERTIFICADO', 'horas_base': 6.0, 'color': '#00FF00'}, {'codigo': 'BAJA', 'horas_base': 0.0, 'color': '#FF0000'}, {'codigo': 'PRESENTE', 'horas_base': 12.0, 'color': '#0000FF'}, {'codigo': 'ASESOR MESSI', 'horas_base': 5.0, 'color': '#FFD700'}, {'codigo': 'CAMBIO DE ROL', 'horas_base': 5.0, 'color': '#FF0000'}, {'codigo': 'CAMBIO DE PRODUCTO', 'horas_base': 0.0, 'color': '#000000'}, {'codigo': 'DEVOLUCIÓN DE HORAS', 'horas_base': None, 'color': '#800080'}]"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "codigo"
+            ],
+            "value": "CodigosHorarios(**codigo_data)"
+        },
+        {
+            "lineno": 39,
+            "targets": [
+                "query"
+            ],
+            "value": "'\\n    SELECT DISTINCT dni, nombre, lider, skill \\n    FROM dias_no_habiles \\n    WHERE dni IS NOT NULL\\n    '"
+        },
+        {
+            "lineno": 45,
+            "targets": [
+                "result"
+            ],
+            "value": "db_session.execute(query)"
+        },
+        {
+            "lineno": 49,
+            "targets": [
+                "asesor"
+            ],
+            "value": "Asesores(dni=row.dni, nombre=row.nombre, lider=row.lider, skill=row.skill)"
+        },
+        {
+            "lineno": 65,
+            "targets": [
+                "app"
+            ],
+            "value": "create_app()"
+        }
+    ]
+}

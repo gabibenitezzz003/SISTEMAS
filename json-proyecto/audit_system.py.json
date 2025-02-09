@@ -1,0 +1,294 @@
+{
+    "archivo": "audit_system.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\audit_system.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from datetime import datetime\nimport logging\nfrom sqlalchemy import Column, Integer, String, DateTime, JSON\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\n\nclass AuditLog(Base):\n    __tablename__ = 'audit_logs'\n    \n    id = Column(Integer, primary_key=True)\n    user_id = Column(Integer)\n    action_type = Column(String(50))\n    details = Column(JSON)\n    timestamp = Column(DateTime, default=datetime.utcnow)\n\nclass AuditSystem:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.logger = self.setup_logging()\n        \n    def setup_logging(self):\n        \"\"\"Configura el sistema de logging\"\"\"\n        logger = logging.getLogger('audit_system')\n        logger.setLevel(logging.INFO)\n        \n        # Crear handler para archivo\n        fh = logging.FileHandler(\n            f'logs/gtr_audit_{datetime.now().strftime(\"%Y%m\")}.log'\n        )\n        fh.setLevel(logging.INFO)\n        \n        # Crear formatter\n        formatter = logging.Formatter(\n            '%(asctime)s [%(levelname)s] - %(message)s'\n        )\n        fh.setFormatter(formatter)\n        \n        # Agregar handler al logger\n        logger.addHandler(fh)\n        \n        return logger\n        \n    def log_action(self, user_id, action_type, details):\n        \"\"\"Registra una acción en el sistema\"\"\"\n        try:\n            # Registrar en base de datos\n            audit_entry = AuditLog(\n                user_id=user_id,\n                action_type=action_type,\n                details=details\n            )\n            self.session.add(audit_entry)\n            self.session.commit()\n            \n            # Registrar en archivo de log\n            self.logger.info(f\"User {user_id} performed {action_type}: {details}\")\n            \n        except Exception as e:\n            self.logger.error(f\"Error logging action: {str(e)}\")\n            \n    def generate_audit_report(self, start_date, end_date):\n        \"\"\"Genera un reporte de auditoría\"\"\"\n        logs = self.session.query(AuditLog).filter(\n            AuditLog.timestamp.between(start_date, end_date)\n        ).all()\n        \n        report = {\n            'period': f\"{start_date} to {end_date}\",\n            'total_actions': len(logs),\n            'actions_by_type': {},\n            'actions_by_user': {},\n            'suspicious_activities': []\n        }\n        \n        # Analizar logs\n        for log in logs:\n            # Contar por tipo\n            report['actions_by_type'][log.action_type] = \\\n                report['actions_by_type'].get(log.action_type, 0) + 1\n                \n            # Contar por usuario\n            report['actions_by_user'][log.user_id] = \\\n                report['actions_by_user'].get(log.user_id, 0) + 1\n                \n            # Detectar actividades sospechosas\n            if self.is_suspicious_activity(log):\n                report['suspicious_activities'].append(log)\n                \n        return report ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "logging",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Column",
+                    "asname": null
+                },
+                {
+                    "name": "Integer",
+                    "asname": null
+                },
+                {
+                    "name": "String",
+                    "asname": null
+                },
+                {
+                    "name": "DateTime",
+                    "asname": null
+                },
+                {
+                    "name": "JSON",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy.ext.declarative",
+            "level": 0,
+            "names": [
+                {
+                    "name": "declarative_base",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "AuditLog",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": []
+        },
+        {
+            "nombre": "AuditSystem",
+            "lineno": 17,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 18,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "setup_logging",
+                    "lineno": 22,
+                    "docstring": "Configura el sistema de logging",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "log_action",
+                    "lineno": 44,
+                    "docstring": "Registra una acción en el sistema",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "user_id",
+                        "action_type",
+                        "details"
+                    ]
+                },
+                {
+                    "nombre": "generate_audit_report",
+                    "lineno": 62,
+                    "docstring": "Genera un reporte de auditoría",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "start_date",
+                        "end_date"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 18,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "setup_logging",
+            "lineno": 22,
+            "docstring": "Configura el sistema de logging",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "log_action",
+            "lineno": 44,
+            "docstring": "Registra una acción en el sistema",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "user_id",
+                "action_type",
+                "details"
+            ]
+        },
+        {
+            "nombre": "generate_audit_report",
+            "lineno": 62,
+            "docstring": "Genera un reporte de auditoría",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "start_date",
+                "end_date"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "Base"
+            ],
+            "value": "declarative_base()"
+        },
+        {
+            "lineno": 9,
+            "targets": [
+                "__tablename__"
+            ],
+            "value": "'audit_logs'"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "id"
+            ],
+            "value": "Column(Integer, primary_key=True)"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "user_id"
+            ],
+            "value": "Column(Integer)"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "action_type"
+            ],
+            "value": "Column(String(50))"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "details"
+            ],
+            "value": "Column(JSON)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "timestamp"
+            ],
+            "value": "Column(DateTime, default=datetime.utcnow)"
+        },
+        {
+            "lineno": 19,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "self.logger"
+            ],
+            "value": "self.setup_logging()"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "logger"
+            ],
+            "value": "logging.getLogger('audit_system')"
+        },
+        {
+            "lineno": 28,
+            "targets": [
+                "fh"
+            ],
+            "value": "logging.FileHandler(f'logs/gtr_audit_{datetime.now().strftime('%Y%m')}.log')"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "formatter"
+            ],
+            "value": "logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "audit_entry"
+            ],
+            "value": "AuditLog(user_id=user_id, action_type=action_type, details=details)"
+        },
+        {
+            "lineno": 64,
+            "targets": [
+                "logs"
+            ],
+            "value": "self.session.query(AuditLog).filter(AuditLog.timestamp.between(start_date, end_date)).all()"
+        },
+        {
+            "lineno": 68,
+            "targets": [
+                "report"
+            ],
+            "value": "{'period': f'{start_date} to {end_date}', 'total_actions': len(logs), 'actions_by_type': {}, 'actions_by_user': {}, 'suspicious_activities': []}"
+        },
+        {
+            "lineno": 79,
+            "targets": [
+                "report['actions_by_type'][log.action_type]"
+            ],
+            "value": "report['actions_by_type'].get(log.action_type, 0) + 1"
+        },
+        {
+            "lineno": 83,
+            "targets": [
+                "report['actions_by_user'][log.user_id]"
+            ],
+            "value": "report['actions_by_user'].get(log.user_id, 0) + 1"
+        }
+    ]
+}

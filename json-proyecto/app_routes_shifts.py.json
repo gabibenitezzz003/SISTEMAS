@@ -1,0 +1,178 @@
+{
+    "archivo": "shifts.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\routes\\shifts.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import jsonify, request\nfrom app.routes import shifts_bp\nfrom app.models import DiasNoHabiles, Asesores\nfrom app.database import db_session\nfrom datetime import datetime\n\n@shifts_bp.route('/by-date', methods=['GET'])\ndef get_shifts_by_date():\n    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))\n    date = datetime.strptime(date_str, '%Y-%m-%d').date()\n    \n    shifts = DiasNoHabiles.query.filter_by(fecha=date).all()\n    \n    shifts_data = {\n        'COM': [],\n        'CROSS': []\n    }\n    \n    for shift in shifts:\n        shift_info = {\n            'dni': shift.dni,\n            'nombre': shift.nombre,\n            'horario': shift.horario,\n            'tipo_dia': shift.tipo_dia\n        }\n        shifts_data[shift.skill].append(shift_info)\n    \n    return jsonify(shifts_data)\n\n@shifts_bp.route('/update', methods=['POST'])\ndef update_shift():\n    data = request.json\n    \n    shift = DiasNoHabiles.query.filter_by(\n        dni=data['dni'],\n        fecha=datetime.strptime(data['fecha'], '%Y-%m-%d').date()\n    ).first()\n    \n    if shift:\n        shift.horario = data['horario']\n        db_session.commit()\n        return jsonify({'message': 'Turno actualizado correctamente'})\n    \n    return jsonify({'error': 'Turno no encontrado'}), 404\n\n@shifts_bp.route('/weekend-schedule', methods=['POST'])\ndef generate_weekend_schedule():\n    data = request.json\n    date = datetime.strptime(data['fecha'], '%Y-%m-%d').date()\n    \n    # Lógica para generar horario de fin de semana\n    # ... (implementar según necesidades específicas)\n    \n    return jsonify({'message': 'Horario de fin de semana generado'}) ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "jsonify",
+                    "asname": null
+                },
+                {
+                    "name": "request",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.routes",
+            "level": 0,
+            "names": [
+                {
+                    "name": "shifts_bp",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "DiasNoHabiles",
+                    "asname": null
+                },
+                {
+                    "name": "Asesores",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "get_shifts_by_date",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [
+                "shifts_bp.route('/by-date', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "update_shift",
+            "lineno": 31,
+            "docstring": null,
+            "decoradores": [
+                "shifts_bp.route('/update', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "generate_weekend_schedule",
+            "lineno": 47,
+            "docstring": null,
+            "decoradores": [
+                "shifts_bp.route('/weekend-schedule', methods=['POST'])"
+            ],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 9,
+            "targets": [
+                "date_str"
+            ],
+            "value": "request.args.get('date', datetime.now().strftime('%Y-%m-%d'))"
+        },
+        {
+            "lineno": 10,
+            "targets": [
+                "date"
+            ],
+            "value": "datetime.strptime(date_str, '%Y-%m-%d').date()"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "shifts"
+            ],
+            "value": "DiasNoHabiles.query.filter_by(fecha=date).all()"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "shifts_data"
+            ],
+            "value": "{'COM': [], 'CROSS': []}"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "shift_info"
+            ],
+            "value": "{'dni': shift.dni, 'nombre': shift.nombre, 'horario': shift.horario, 'tipo_dia': shift.tipo_dia}"
+        },
+        {
+            "lineno": 32,
+            "targets": [
+                "data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "shift"
+            ],
+            "value": "DiasNoHabiles.query.filter_by(dni=data['dni'], fecha=datetime.strptime(data['fecha'], '%Y-%m-%d').date()).first()"
+        },
+        {
+            "lineno": 40,
+            "targets": [
+                "shift.horario"
+            ],
+            "value": "data['horario']"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 49,
+            "targets": [
+                "date"
+            ],
+            "value": "datetime.strptime(data['fecha'], '%Y-%m-%d').date()"
+        }
+    ]
+}

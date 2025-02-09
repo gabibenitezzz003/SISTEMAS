@@ -1,0 +1,553 @@
+{
+    "archivo": "app.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import Flask, render_template, jsonify, request\nfrom flask_sqlalchemy import SQLAlchemy\nfrom datetime import datetime\nimport os\nfrom dotenv import load_dotenv\nimport google.generativeai as genai\nfrom database import db, db_session, init_db\nfrom utils.data_processor import DNHProcessor\nfrom ml_engine import MLEngine\nfrom performance_analyzer import PerformanceAnalyzer\nfrom notification_system import NotificationSystem\nfrom audit_system import AuditSystem\nfrom incident_manager import IncidentManager\nfrom ai_assistant import GTRAssistant\nfrom models import AIQuery\n\n#variables de entorno\nload_dotenv()\n\n# Verificar que la API key está disponible\nif not os.getenv('PALM_API_KEY'):\n    raise ValueError(\"PALM_API_KEY no encontrada en variables de entorno\")\n\napp = Flask(__name__)\n\n# Configuración de la base de datos\napp.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///gtr.db')\napp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False\n\n# Inicializar la extensión db con la app\ndb.init_app(app)\n\n# Crear el contexto de la aplicación\nwith app.app_context():\n    # Inicializar la base de datos\n    init_db()\n\n# Inicializar componentes con db_session\ndnh_processor = DNHProcessor(db_session)\nml_engine = MLEngine(db_session)\nperformance_analyzer = PerformanceAnalyzer(db_session)\nnotification_system = NotificationSystem(db_session)\naudit_system = AuditSystem(db_session)\nincident_manager = IncidentManager(db_session)\n\n# Limpiar la sesión de la base de datos después de cada request\n@app.teardown_appcontext\ndef shutdown_session(exception=None):\n    db_session.remove()\n\n@app.route('/')\ndef welcome():\n    return render_template('welcome.html')\n\n@app.route('/submenu')\ndef submenu():\n    return render_template('submenu.html')\n\n@app.route('/dashboard')\n\ndef dashboard():\n    return render_template('dashboard.html')\n\n@app.route('/shift-management')\ndef shift_management():\n    return render_template('gestion_cambios.html')\n\n@app.route('/ia-gtr')\ndef ia_gtr():\n    return render_template('ia_gtr.html')\n\n@app.route('/analytics')\ndef analytics():\n    return render_template('analytics.html', active_page='analytics')\n\n@app.route('/analytics/business-intelligence')\ndef business_intelligence():\n    return render_template('business_intelligence.html')\n\n@app.route('/analytics/market-analysis')\ndef market_analysis():\n    return render_template('market_analysis.html')\n\n@app.route('/api/ia/analyze', methods=['POST'])\ndef analyze_query():\n    try:\n        data = request.json\n        query = data.get('query', '')\n        \n        # Inicializar el asistente con la sesión de base de datos\n        assistant = GTRAssistant(db_session)\n        \n        # Procesar la consulta\n        response = assistant.process_query(query)\n        \n        # Guardar la interacción en la base de datos\n        new_query = AIQuery(\n            query=query,\n            response=response,\n            timestamp=datetime.now()\n        )\n        db.session.add(new_query)\n        db.session.commit()\n        \n        return jsonify({\n            'status': 'success',\n            'analysis': response\n        })\n        \n    except Exception as e:\n        print(f\"Error en /api/ia/analyze: {str(e)}\")  # Para debugging\n        return jsonify({\n            'status': 'error',\n            'error': str(e)\n        }), 500\n\n@app.route('/api/actions/predict', methods=['POST'])\ndef predict_automation():\n    try:\n        predictions = ml_engine.predict_future_needs(horizon_days=30)\n        return jsonify(predictions)\n    except Exception as e:\n        return jsonify({'error': str(e)}), 500\n\n@app.route('/api/actions/analyze-trends', methods=['POST'])\ndef analyze_trends():\n    try:\n        trends = ml_engine.detect_patterns(data=None)  # Implementar lógica de datos\n        return jsonify(trends)\n    except Exception as e:\n        return jsonify({'error': str(e)}), 500\n\n@app.route('/api/shifts/optimize', methods=['POST'])\ndef optimize_shifts():\n    try:\n        data = request.json\n        month = data.get('month')\n        year = data.get('year')\n        \n        optimization_result = ml_engine.optimize_shifts(month, year)\n        return jsonify(optimization_result)\n    except Exception as e:\n        return jsonify({'error': str(e)}), 500\n\n@app.route('/api/analytics/performance', methods=['GET'])\ndef get_performance_analytics():\n    try:\n        department_id = request.args.get('department_id')\n        period = request.args.get('period', 'month')\n        analytics = performance_analyzer.analyze_department_performance(\n            department_id, \n            period\n        )\n        return jsonify(analytics)\n    except Exception as e:\n        return jsonify({'error': str(e)}), 500\n\n@app.route('/api/incidents', methods=['POST'])\ndef report_incident():\n    try:\n        incident_data = request.json\n        response = incident_manager.register_incident(incident_data)\n        notification_system.send_notification({\n            'type': 'incident',\n            'severity': incident_data.get('severity', 'medium'),\n            'message': incident_data.get('description')\n        })\n        return jsonify(response)\n    except Exception as e:\n        return jsonify({'error': str(e)}), 500\n\n@app.route('/api/shifts', methods=['GET'])\ndef get_shifts():\n    # Aquí podrías obtener los datos de tu base de datos\n    horarios = {\n        '08:00 a 14:00': 7,\n        '08:30 a 14:30': 7.5,\n        '09:00 a 14:00': 6,\n        '09:00 a 15:00': 8,\n        '09:30 a 15:30': 8.5,\n        '10:00 a 16:00': 9,\n        '10:30 a 16:30': 9.5,\n        '11:00 a 17:00': 10,\n        '11:30 a 17:30': 10.5,\n        '12:00 a 18:00': 11,\n        '12:30 a 18:30': 11.5,\n        '13:00 a 19:00': 12,\n        '13:30 a 19:30': 12,\n        '14:00 a 20:00': 12,\n        '14:30 a 20:30': 12,\n        '15:00 a 21:00': 12,\n        '15:30 a 21:30': 12,\n        '16:00 a 22:00': 12\n    }\n    return jsonify(horarios)\n\n@app.route('/api/estados', methods=['GET'])\ndef get_estados():\n    estados = {\n        'LICENCIA': 6,\n        'FALTA_INJUSTIFICADA': 6,\n        'CERTIFICADO': 6,\n        'AUSENTE': 0,\n        'PRESENTE': 6,\n        'ASESOR_MESSI': 5,\n        'CAMBIO_DE_ROL': 5,\n        'CAMBIO_DE_PRODUCTO': 0,\n        'DEVOLUCION_DE_HORAS': 'No se modifica cómputo'\n    }\n    return jsonify(estados)\n\nif __name__ == '__main__':\n    app.run(debug=True) ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Flask",
+                    "asname": null
+                },
+                {
+                    "name": "render_template",
+                    "asname": null
+                },
+                {
+                    "name": "jsonify",
+                    "asname": null
+                },
+                {
+                    "name": "request",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "flask_sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "SQLAlchemy",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "dotenv",
+            "level": 0,
+            "names": [
+                {
+                    "name": "load_dotenv",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "google.generativeai",
+                    "asname": "genai"
+                }
+            ],
+            "lineno": 6
+        },
+        {
+            "type": "from",
+            "module": "database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db",
+                    "asname": null
+                },
+                {
+                    "name": "db_session",
+                    "asname": null
+                },
+                {
+                    "name": "init_db",
+                    "asname": null
+                }
+            ],
+            "lineno": 7
+        },
+        {
+            "type": "from",
+            "module": "utils.data_processor",
+            "level": 0,
+            "names": [
+                {
+                    "name": "DNHProcessor",
+                    "asname": null
+                }
+            ],
+            "lineno": 8
+        },
+        {
+            "type": "from",
+            "module": "ml_engine",
+            "level": 0,
+            "names": [
+                {
+                    "name": "MLEngine",
+                    "asname": null
+                }
+            ],
+            "lineno": 9
+        },
+        {
+            "type": "from",
+            "module": "performance_analyzer",
+            "level": 0,
+            "names": [
+                {
+                    "name": "PerformanceAnalyzer",
+                    "asname": null
+                }
+            ],
+            "lineno": 10
+        },
+        {
+            "type": "from",
+            "module": "notification_system",
+            "level": 0,
+            "names": [
+                {
+                    "name": "NotificationSystem",
+                    "asname": null
+                }
+            ],
+            "lineno": 11
+        },
+        {
+            "type": "from",
+            "module": "audit_system",
+            "level": 0,
+            "names": [
+                {
+                    "name": "AuditSystem",
+                    "asname": null
+                }
+            ],
+            "lineno": 12
+        },
+        {
+            "type": "from",
+            "module": "incident_manager",
+            "level": 0,
+            "names": [
+                {
+                    "name": "IncidentManager",
+                    "asname": null
+                }
+            ],
+            "lineno": 13
+        },
+        {
+            "type": "from",
+            "module": "ai_assistant",
+            "level": 0,
+            "names": [
+                {
+                    "name": "GTRAssistant",
+                    "asname": null
+                }
+            ],
+            "lineno": 14
+        },
+        {
+            "type": "from",
+            "module": "models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "AIQuery",
+                    "asname": null
+                }
+            ],
+            "lineno": 15
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "shutdown_session",
+            "lineno": 48,
+            "docstring": null,
+            "decoradores": [
+                "app.teardown_appcontext"
+            ],
+            "argumentos": [
+                "exception"
+            ]
+        },
+        {
+            "nombre": "welcome",
+            "lineno": 52,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "submenu",
+            "lineno": 56,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/submenu')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "dashboard",
+            "lineno": 61,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/dashboard')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "shift_management",
+            "lineno": 65,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/shift-management')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "ia_gtr",
+            "lineno": 69,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/ia-gtr')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "analytics",
+            "lineno": 73,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/analytics')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "business_intelligence",
+            "lineno": 77,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/analytics/business-intelligence')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "market_analysis",
+            "lineno": 81,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/analytics/market-analysis')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "analyze_query",
+            "lineno": 85,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/ia/analyze', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "predict_automation",
+            "lineno": 118,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/actions/predict', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "analyze_trends",
+            "lineno": 126,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/actions/analyze-trends', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "optimize_shifts",
+            "lineno": 134,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/shifts/optimize', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_performance_analytics",
+            "lineno": 146,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/analytics/performance', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "report_incident",
+            "lineno": 159,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/incidents', methods=['POST'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_shifts",
+            "lineno": 173,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/shifts', methods=['GET'])"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_estados",
+            "lineno": 198,
+            "docstring": null,
+            "decoradores": [
+                "app.route('/api/estados', methods=['GET'])"
+            ],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 24,
+            "targets": [
+                "app"
+            ],
+            "value": "Flask(__name__)"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "app.config['SQLALCHEMY_DATABASE_URI']"
+            ],
+            "value": "os.getenv('DATABASE_URL', 'sqlite:///gtr.db')"
+        },
+        {
+            "lineno": 28,
+            "targets": [
+                "app.config['SQLALCHEMY_TRACK_MODIFICATIONS']"
+            ],
+            "value": "False"
+        },
+        {
+            "lineno": 39,
+            "targets": [
+                "dnh_processor"
+            ],
+            "value": "DNHProcessor(db_session)"
+        },
+        {
+            "lineno": 40,
+            "targets": [
+                "ml_engine"
+            ],
+            "value": "MLEngine(db_session)"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "performance_analyzer"
+            ],
+            "value": "PerformanceAnalyzer(db_session)"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "notification_system"
+            ],
+            "value": "NotificationSystem(db_session)"
+        },
+        {
+            "lineno": 43,
+            "targets": [
+                "audit_system"
+            ],
+            "value": "AuditSystem(db_session)"
+        },
+        {
+            "lineno": 44,
+            "targets": [
+                "incident_manager"
+            ],
+            "value": "IncidentManager(db_session)"
+        },
+        {
+            "lineno": 87,
+            "targets": [
+                "data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 88,
+            "targets": [
+                "query"
+            ],
+            "value": "data.get('query', '')"
+        },
+        {
+            "lineno": 91,
+            "targets": [
+                "assistant"
+            ],
+            "value": "GTRAssistant(db_session)"
+        },
+        {
+            "lineno": 94,
+            "targets": [
+                "response"
+            ],
+            "value": "assistant.process_query(query)"
+        },
+        {
+            "lineno": 97,
+            "targets": [
+                "new_query"
+            ],
+            "value": "AIQuery(query=query, response=response, timestamp=datetime.now())"
+        },
+        {
+            "lineno": 120,
+            "targets": [
+                "predictions"
+            ],
+            "value": "ml_engine.predict_future_needs(horizon_days=30)"
+        },
+        {
+            "lineno": 128,
+            "targets": [
+                "trends"
+            ],
+            "value": "ml_engine.detect_patterns(data=None)"
+        },
+        {
+            "lineno": 136,
+            "targets": [
+                "data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 137,
+            "targets": [
+                "month"
+            ],
+            "value": "data.get('month')"
+        },
+        {
+            "lineno": 138,
+            "targets": [
+                "year"
+            ],
+            "value": "data.get('year')"
+        },
+        {
+            "lineno": 140,
+            "targets": [
+                "optimization_result"
+            ],
+            "value": "ml_engine.optimize_shifts(month, year)"
+        },
+        {
+            "lineno": 148,
+            "targets": [
+                "department_id"
+            ],
+            "value": "request.args.get('department_id')"
+        },
+        {
+            "lineno": 149,
+            "targets": [
+                "period"
+            ],
+            "value": "request.args.get('period', 'month')"
+        },
+        {
+            "lineno": 150,
+            "targets": [
+                "analytics"
+            ],
+            "value": "performance_analyzer.analyze_department_performance(department_id, period)"
+        },
+        {
+            "lineno": 161,
+            "targets": [
+                "incident_data"
+            ],
+            "value": "request.json"
+        },
+        {
+            "lineno": 162,
+            "targets": [
+                "response"
+            ],
+            "value": "incident_manager.register_incident(incident_data)"
+        },
+        {
+            "lineno": 175,
+            "targets": [
+                "horarios"
+            ],
+            "value": "{'08:00 a 14:00': 7, '08:30 a 14:30': 7.5, '09:00 a 14:00': 6, '09:00 a 15:00': 8, '09:30 a 15:30': 8.5, '10:00 a 16:00': 9, '10:30 a 16:30': 9.5, '11:00 a 17:00': 10, '11:30 a 17:30': 10.5, '12:00 a 18:00': 11, '12:30 a 18:30': 11.5, '13:00 a 19:00': 12, '13:30 a 19:30': 12, '14:00 a 20:00': 12, '14:30 a 20:30': 12, '15:00 a 21:00': 12, '15:30 a 21:30': 12, '16:00 a 22:00': 12}"
+        },
+        {
+            "lineno": 199,
+            "targets": [
+                "estados"
+            ],
+            "value": "{'LICENCIA': 6, 'FALTA_INJUSTIFICADA': 6, 'CERTIFICADO': 6, 'AUSENTE': 0, 'PRESENTE': 6, 'ASESOR_MESSI': 5, 'CAMBIO_DE_ROL': 5, 'CAMBIO_DE_PRODUCTO': 0, 'DEVOLUCION_DE_HORAS': 'No se modifica cómputo'}"
+        }
+    ]
+}

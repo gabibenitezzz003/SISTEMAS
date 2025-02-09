@@ -1,0 +1,120 @@
+{
+    "archivo": "test_db.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\scripts\\test_db.py",
+    "docstring_modulo": null,
+    "contenido_completo": "import os\nimport sys\nfrom pathlib import Path\n\n# Agregar el directorio raíz del proyecto al PYTHONPATH\nproject_root = Path(__file__).parent.parent\nsys.path.append(str(project_root))\n\nfrom app import create_app\nfrom app.database import db_session\nfrom app.models import Asesores, DiasNoHabiles\n\ndef test_connection():\n    try:\n        # Intentar obtener todos los asesores\n        asesores = Asesores.query.all()\n        print(f\"Conexión exitosa! Número de asesores: {len(asesores)}\")\n        \n        # Intentar obtener días no hábiles\n        dias = DiasNoHabiles.query.limit(5).all()\n        print(\"\\nPrimeros 5 días no hábiles:\")\n        for dia in dias:\n            print(f\"- {dia.fecha}: {dia.nombre} ({dia.horario})\")\n            \n    except Exception as e:\n        print(f\"Error al conectar con la base de datos: {e}\")\n\nif __name__ == \"__main__\":\n    app = create_app()\n    with app.app_context():\n        test_connection() ",
+    "imports": [
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "sys",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "pathlib",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Path",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app",
+            "level": 0,
+            "names": [
+                {
+                    "name": "create_app",
+                    "asname": null
+                }
+            ],
+            "lineno": 9
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 10
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Asesores",
+                    "asname": null
+                },
+                {
+                    "name": "DiasNoHabiles",
+                    "asname": null
+                }
+            ],
+            "lineno": 11
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "test_connection",
+            "lineno": 13,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 6,
+            "targets": [
+                "project_root"
+            ],
+            "value": "Path(__file__).parent.parent"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "asesores"
+            ],
+            "value": "Asesores.query.all()"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "dias"
+            ],
+            "value": "DiasNoHabiles.query.limit(5).all()"
+        },
+        {
+            "lineno": 29,
+            "targets": [
+                "app"
+            ],
+            "value": "create_app()"
+        }
+    ]
+}

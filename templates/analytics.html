@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics - GTR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="animated-background"></div>
+    <div class="container">
+        <div class="header-center">
+            <h1>Analytics</h1>
+            <p class="subtitle">Seleccione un área de análisis</p>
+        </div>
+
+        <div class="modules-grid">
+            <!-- Business Intelligence -->
+            <a href="{{ url_for('business_intelligence') }}" class="module-card">
+                <div class="icon-wrapper">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h2>Business Intelligence</h2>
+                <p>Vista general de métricas y KPIs</p>
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="value">98%</span>
+                        <span class="label">Eficiencia</span>
+                    </div>
+                    <div class="metric">
+                        <span class="value">Real</span>
+                        <span class="label">Time</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Análisis de Mercado -->
+            <a href="{{ url_for('market_analysis') }}" class="module-card">
+                <div class="icon-wrapper">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h2>Análisis de Mercado</h2>
+                <p>Análisis competitivo del sector</p>
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="value">4</span>
+                        <span class="label">Telcos</span>
+                    </div>
+                    <div class="metric">
+                        <span class="value">97%</span>
+                        <span class="label">Precisión</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html> 

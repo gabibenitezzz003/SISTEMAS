@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Horarios{% endblock %}
+
+{% block content %}
+<div class="bg-animation"></div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="neon-text mb-4">Gestión de Horarios</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Panel de Control -->
+        <div class="col-md-4">
+            <div class="glass-card">
+                <h3>Panel de Control</h3>
+                <div class="d-grid gap-3 mt-3">
+                    <button class="cyber-button">Nuevo Horario</button>
+                    <button class="cyber-button">Importar Datos</button>
+                    <button class="cyber-button">Exportar Horarios</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendario -->
+        <div class="col-md-8">
+            <div class="glass-card">
+                <h3>Calendario de Turnos</h3>
+                <div id="calendar" class="mt-3">
+                    <!-- Aquí irá el calendario -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h4>Total Turnos</h4>
+                <p class="display-4 neon-text">150</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h4>Personal Activo</h4>
+                <p class="display-4 neon-text">45</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h4>Horas Asignadas</h4>
+                <p class="display-4 neon-text">1.2k</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card text-center">
+                <h4>Eficiencia</h4>
+                <p class="display-4 neon-text">98%</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

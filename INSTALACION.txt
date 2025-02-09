@@ -1,0 +1,179 @@
+GUÍA DE INSTALACIÓN Y CONFIGURACIÓN - GTR PROJECT
+================================================
+
+1. REQUISITOS PREVIOS
+--------------------
+
+INSTALAR PYTHON:
+Windows:
+1. Descargar Python 3.9+ desde python.org
+2. Ejecutar el instalador
+3. ✅ Marcar "Add Python to PATH"
+
+Linux:
+$ sudo apt update
+$ sudo apt install python3 python3-pip
+
+INSTALAR MySQL:
+Windows:
+1. Descargar MySQL Installer desde mysql.com
+2. Instalar MySQL Server
+3. Anotar la contraseña root durante la instalación
+
+Linux:
+$ sudo apt install mysql-server
+$ sudo systemctl start mysql
+$ sudo mysql_secure_installation
+
+2. CONFIGURAR EL PROYECTO
+------------------------
+
+1. Crear estructura del proyecto:
+$ mkdir gtr_project
+$ cd gtr_project
+$ mkdir static templates database
+$ mkdir static/css static/js
+
+2. Crear entorno virtual:
+Windows:
+$ python -m venv venv
+$ venv\Scripts\activate
+
+Linux:
+$ python3 -m venv venv
+$ source venv/bin/activate
+
+3. Instalar dependencias:
+$ pip install -r requirements.txt
+
+3. CONFIGURAR BASE DE DATOS
+--------------------------
+
+1. Acceder a MySQL:
+Windows:
+$ mysql -u root -p
+
+Linux:
+$ sudo mysql -u root -p
+
+2. Ejecutar comandos SQL:
+mysql> CREATE USER 'gtr_user'@'localhost' IDENTIFIED BY 'tu_contraseña';
+mysql> CREATE DATABASE gtr_db;
+mysql> GRANT ALL PRIVILEGES ON gtr_db.* TO 'gtr_user'@'localhost';
+mysql> FLUSH PRIVILEGES;
+mysql> EXIT;
+
+3. Importar esquema:
+$ mysql -u gtr_user -p gtr_db < database/schema.sql
+
+4. CONFIGURAR VARIABLES DE ENTORNO
+--------------------------------
+
+1. Crear archivo .env:
+Windows:
+$ copy nul .env
+
+Linux:
+$ touch .env
+
+2. Contenido del archivo .env:
+SECRET_KEY=tu_clave_secreta_aqui
+DATABASE_URL=mysql+pymysql://gtr_user:tu_contraseña@localhost/gtr_db
+FLASK_ENV=development
+FLASK_APP=app.py
+
+5. ESTRUCTURA DE ARCHIVOS
+------------------------
+
+Verificar que los siguientes archivos estén en su lugar:
+
+gtr_project/
+│
+├── app.py
+├── config.py
+├── requirements.txt
+├── .env
+├── database/
+│   └── schema.sql
+├── static/
+│   ├── css/
+│   │   ├── dashboard.css
+│   │   └── gestion_cambios.css
+│   └── js/
+│       └── gestion_cambios.js
+└── templates/
+    ├── dashboard.html
+    └── gestion_cambios.html
+
+6. INICIAR LA APLICACIÓN
+-----------------------
+
+1. Activar entorno virtual (si no está activado):
+Windows:
+$ venv\Scripts\activate
+
+Linux:
+$ source venv/bin/activate
+
+2. Ejecutar la aplicación:
+$ flask run
+
+3. Acceder a la aplicación:
+- Abrir navegador
+- Ir a http://127.0.0.1:5000/
+
+7. SOLUCIÓN DE PROBLEMAS
+-----------------------
+
+1. Error de MySQL:
+Windows:
+- Abrir services.msc
+- Buscar "MySQL" y verificar que está "Running"
+
+Linux:
+$ sudo systemctl status mysql
+
+2. Error de conexión a la base de datos:
+- Verificar credenciales en .env
+- Probar conexión:
+$ mysql -u gtr_user -p
+
+3. Error de módulos:
+$ pip install -r requirements.txt --force-reinstall
+
+8. MANTENIMIENTO
+---------------
+
+1. Actualizar la base de datos:
+$ flask db upgrade
+
+2. Limpiar caché:
+Windows:
+$ del /s /q __pycache__
+
+Linux:
+$ find . -type d -name __pycache__ -exec rm -r {} +
+
+9. DESARROLLO
+------------
+
+1. Activar modo debug en app.py:
+if __name__ == '__main__':
+    app.run(debug=True)
+
+2. Ver logs:
+$ tail -f logs/app.log
+
+NOTAS IMPORTANTES:
+----------------
+- Asegúrate de tener todos los permisos necesarios para la instalación
+- La base de datos debe estar corriendo antes de iniciar la aplicación
+- Mantén las credenciales en un lugar seguro
+- Realiza copias de seguridad regularmente
+- Para desarrollo, usa el modo debug
+- Para producción, configura un servidor web como nginx o apache
+
+Para cualquier problema durante la instalación, consulta la documentación oficial de Flask y MySQL.
+
+Versión: 1.0
+Fecha: 2024 

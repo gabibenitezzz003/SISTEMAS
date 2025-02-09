@@ -1,0 +1,280 @@
+{
+    "archivo": "predictive_system.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\predictive_system.py",
+    "docstring_modulo": null,
+    "contenido_completo": "import pandas as pd\nimport numpy as np\nfrom sklearn.ensemble import RandomForestRegressor\nfrom sklearn.preprocessing import StandardScaler\nfrom datetime import datetime, timedelta\nimport joblib\n\nclass GTRPredictor:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.model = None\n        self.scaler = StandardScaler()\n        \n    def train_model(self):\n        \"\"\"Entrena el modelo predictivo con datos históricos\"\"\"\n        # Obtener datos históricos\n        historical_data = self.get_historical_data()\n        \n        # Preparar características\n        X = self.prepare_features(historical_data)\n        y = historical_data['hours'].values\n        \n        # Escalar datos\n        X_scaled = self.scaler.fit_transform(X)\n        \n        # Entrenar modelo\n        self.model = RandomForestRegressor(n_estimators=100, random_state=42)\n        self.model.fit(X_scaled, y)\n        \n        # Guardar modelo\n        joblib.dump(self.model, 'models/gtr_predictor.joblib')\n        joblib.dump(self.scaler, 'models/gtr_scaler.joblib')\n        \n    def predict_next_month(self):\n        \"\"\"Predice las necesidades de personal para el próximo mes\"\"\"\n        if not self.model:\n            self.model = joblib.load('models/gtr_predictor.joblib')\n            self.scaler = joblib.load('models/gtr_scaler.joblib')\n            \n        # Generar fechas para el próximo mes\n        next_month = datetime.now() + timedelta(days=30)\n        dates = pd.date_range(next_month, periods=30, freq='D')\n        \n        predictions = []\n        for date in dates:\n            features = self.prepare_prediction_features(date)\n            scaled_features = self.scaler.transform([features])\n            prediction = self.model.predict(scaled_features)[0]\n            \n            predictions.append({\n                'date': date,\n                'predicted_hours': prediction,\n                'confidence': self.calculate_confidence(prediction)\n            })\n            \n        return predictions\n    \n    def calculate_confidence(self, prediction):\n        \"\"\"Calcula el nivel de confianza de la predicción\"\"\"\n        # Implementar lógica de confianza basada en la varianza del modelo\n        return np.random.uniform(0.85, 0.95)  # Simplificado para el ejemplo ",
+    "imports": [
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "numpy",
+                    "asname": "np"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "sklearn.ensemble",
+            "level": 0,
+            "names": [
+                {
+                    "name": "RandomForestRegressor",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sklearn.preprocessing",
+            "level": 0,
+            "names": [
+                {
+                    "name": "StandardScaler",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "joblib",
+                    "asname": null
+                }
+            ],
+            "lineno": 6
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "GTRPredictor",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 9,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "train_model",
+                    "lineno": 14,
+                    "docstring": "Entrena el modelo predictivo con datos históricos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "predict_next_month",
+                    "lineno": 34,
+                    "docstring": "Predice las necesidades de personal para el próximo mes",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "calculate_confidence",
+                    "lineno": 58,
+                    "docstring": "Calcula el nivel de confianza de la predicción",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "prediction"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 9,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "train_model",
+            "lineno": 14,
+            "docstring": "Entrena el modelo predictivo con datos históricos",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "predict_next_month",
+            "lineno": 34,
+            "docstring": "Predice las necesidades de personal para el próximo mes",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "calculate_confidence",
+            "lineno": 58,
+            "docstring": "Calcula el nivel de confianza de la predicción",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "prediction"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 10,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 11,
+            "targets": [
+                "self.model"
+            ],
+            "value": "None"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "self.scaler"
+            ],
+            "value": "StandardScaler()"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "historical_data"
+            ],
+            "value": "self.get_historical_data()"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "X"
+            ],
+            "value": "self.prepare_features(historical_data)"
+        },
+        {
+            "lineno": 21,
+            "targets": [
+                "y"
+            ],
+            "value": "historical_data['hours'].values"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "X_scaled"
+            ],
+            "value": "self.scaler.fit_transform(X)"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "self.model"
+            ],
+            "value": "RandomForestRegressor(n_estimators=100, random_state=42)"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "self.model"
+            ],
+            "value": "joblib.load('models/gtr_predictor.joblib')"
+        },
+        {
+            "lineno": 38,
+            "targets": [
+                "self.scaler"
+            ],
+            "value": "joblib.load('models/gtr_scaler.joblib')"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "next_month"
+            ],
+            "value": "datetime.now() + timedelta(days=30)"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "dates"
+            ],
+            "value": "pd.date_range(next_month, periods=30, freq='D')"
+        },
+        {
+            "lineno": 44,
+            "targets": [
+                "predictions"
+            ],
+            "value": "[]"
+        },
+        {
+            "lineno": 46,
+            "targets": [
+                "features"
+            ],
+            "value": "self.prepare_prediction_features(date)"
+        },
+        {
+            "lineno": 47,
+            "targets": [
+                "scaled_features"
+            ],
+            "value": "self.scaler.transform([features])"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "prediction"
+            ],
+            "value": "self.model.predict(scaled_features)[0]"
+        }
+    ]
+}

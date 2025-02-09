@@ -1,0 +1,278 @@
+{
+    "archivo": "data_processor.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\data_processor.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from sqlalchemy import extract\nimport pandas as pd\nfrom datetime import datetime\nfrom models import Employee, Shift, MonthlyData\n\nclass DNHProcessor:\n    def __init__(self, db_session):\n        self.session = db_session\n\n    def process_dnh_file(self, file_path: str):\n        \"\"\"Procesa el archivo DNH y almacena los datos\"\"\"\n        df = pd.read_excel(file_path)\n        \n        # Procesar y almacenar datos\n        for _, row in df.iterrows():\n            # Crear o actualizar empleado\n            employee = self.get_or_create_employee(row)\n            \n            # Crear turno\n            shift = Shift(\n                employee_id=employee.id,\n                date=row['fecha'],\n                shift_type=row['turno'],\n                hours=row['horas'],\n                is_weekend=row['fecha'].weekday() >= 5\n            )\n            self.session.add(shift)\n        \n        self.session.commit()\n        return self.generate_summary()\n\n    def get_or_create_employee(self, row_data):\n        \"\"\"Obtiene o crea un empleado en la base de datos\"\"\"\n        employee = self.session.query(Employee).filter_by(\n            employee_id=row_data['id_empleado']\n        ).first()\n        \n        if not employee:\n            employee = Employee(\n                employee_id=row_data['id_empleado'],\n                name=row_data['nombre'],\n                department=row_data['departamento'],\n                position=row_data['cargo']\n            )\n            self.session.add(employee)\n            self.session.flush()\n        \n        return employee\n\n    def generate_weekend_report(self, month: int, year: int):\n        \"\"\"Genera reporte de fines de semana\"\"\"\n        shifts = self.session.query(Shift).join(Employee).filter(\n            Shift.is_weekend == True,\n            extract('month', Shift.date) == month,\n            extract('year', Shift.date) == year\n        ).all()\n        \n        data = []\n        for shift in shifts:\n            data.append({\n                'Fecha': shift.date,\n                'Empleado': shift.employee.name,\n                'Turno': shift.shift_type,\n                'Horas': shift.hours\n            })\n        \n        df = pd.DataFrame(data)\n        return df\n\n    def calculate_monthly_stats(self, month: int, year: int):\n        \"\"\"Calcula estadísticas mensuales\"\"\"\n        shifts = self.session.query(Shift).filter(\n            extract('month', Shift.date) == month,\n            extract('year', Shift.date) == year\n        ).all()\n        \n        total_hours = sum(shift.hours for shift in shifts)\n        total_shifts = len(shifts)\n        \n        # Calcular eficiencia (ejemplo simplificado)\n        efficiency = (total_hours / (total_shifts * 8)) * 100 if total_shifts > 0 else 0\n        \n        monthly_data = MonthlyData(\n            month=month,\n            year=year,\n            total_hours=total_hours,\n            total_shifts=total_shifts,\n            efficiency=efficiency,\n            statistics={\n                'weekend_shifts': len([s for s in shifts if s.is_weekend]),\n                'avg_hours_per_shift': total_hours / total_shifts if total_shifts > 0 else 0\n            }\n        )\n        \n        self.session.add(monthly_data)\n        self.session.commit()\n        \n        return monthly_data ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "extract",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Employee",
+                    "asname": null
+                },
+                {
+                    "name": "Shift",
+                    "asname": null
+                },
+                {
+                    "name": "MonthlyData",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "DNHProcessor",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 7,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "process_dnh_file",
+                    "lineno": 10,
+                    "docstring": "Procesa el archivo DNH y almacena los datos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "file_path"
+                    ]
+                },
+                {
+                    "nombre": "get_or_create_employee",
+                    "lineno": 32,
+                    "docstring": "Obtiene o crea un empleado en la base de datos",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "row_data"
+                    ]
+                },
+                {
+                    "nombre": "generate_weekend_report",
+                    "lineno": 50,
+                    "docstring": "Genera reporte de fines de semana",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "month",
+                        "year"
+                    ]
+                },
+                {
+                    "nombre": "calculate_monthly_stats",
+                    "lineno": 70,
+                    "docstring": "Calcula estadísticas mensuales",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "month",
+                        "year"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 7,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "process_dnh_file",
+            "lineno": 10,
+            "docstring": "Procesa el archivo DNH y almacena los datos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "file_path"
+            ]
+        },
+        {
+            "nombre": "get_or_create_employee",
+            "lineno": 32,
+            "docstring": "Obtiene o crea un empleado en la base de datos",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "row_data"
+            ]
+        },
+        {
+            "nombre": "generate_weekend_report",
+            "lineno": 50,
+            "docstring": "Genera reporte de fines de semana",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "month",
+                "year"
+            ]
+        },
+        {
+            "nombre": "calculate_monthly_stats",
+            "lineno": 70,
+            "docstring": "Calcula estadísticas mensuales",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "month",
+                "year"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 8,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 12,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.read_excel(file_path)"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "employee"
+            ],
+            "value": "self.get_or_create_employee(row)"
+        },
+        {
+            "lineno": 20,
+            "targets": [
+                "shift"
+            ],
+            "value": "Shift(employee_id=employee.id, date=row['fecha'], shift_type=row['turno'], hours=row['horas'], is_weekend=row['fecha'].weekday() >= 5)"
+        },
+        {
+            "lineno": 34,
+            "targets": [
+                "employee"
+            ],
+            "value": "self.session.query(Employee).filter_by(employee_id=row_data['id_empleado']).first()"
+        },
+        {
+            "lineno": 39,
+            "targets": [
+                "employee"
+            ],
+            "value": "Employee(employee_id=row_data['id_empleado'], name=row_data['nombre'], department=row_data['departamento'], position=row_data['cargo'])"
+        },
+        {
+            "lineno": 52,
+            "targets": [
+                "shifts"
+            ],
+            "value": "self.session.query(Shift).join(Employee).filter(Shift.is_weekend == True, extract('month', Shift.date) == month, extract('year', Shift.date) == year).all()"
+        },
+        {
+            "lineno": 58,
+            "targets": [
+                "data"
+            ],
+            "value": "[]"
+        },
+        {
+            "lineno": 67,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.DataFrame(data)"
+        },
+        {
+            "lineno": 72,
+            "targets": [
+                "shifts"
+            ],
+            "value": "self.session.query(Shift).filter(extract('month', Shift.date) == month, extract('year', Shift.date) == year).all()"
+        },
+        {
+            "lineno": 77,
+            "targets": [
+                "total_hours"
+            ],
+            "value": "sum((shift.hours for shift in shifts))"
+        },
+        {
+            "lineno": 78,
+            "targets": [
+                "total_shifts"
+            ],
+            "value": "len(shifts)"
+        },
+        {
+            "lineno": 81,
+            "targets": [
+                "efficiency"
+            ],
+            "value": "total_hours / (total_shifts * 8) * 100 if total_shifts > 0 else 0"
+        },
+        {
+            "lineno": 83,
+            "targets": [
+                "monthly_data"
+            ],
+            "value": "MonthlyData(month=month, year=year, total_hours=total_hours, total_shifts=total_shifts, efficiency=efficiency, statistics={'weekend_shifts': len([s for s in shifts if s.is_weekend]), 'avg_hours_per_shift': total_hours / total_shifts if total_shifts > 0 else 0})"
+        }
+    ]
+}

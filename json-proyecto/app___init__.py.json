@@ -1,0 +1,98 @@
+{
+    "archivo": "__init__.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\__init__.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import Flask\nfrom app.database import db_session\nfrom app.config.config import Config\nfrom app.routes import dashboard_bp, shifts_bp, ia_bp, analytics_bp\n\ndef create_app():\n    app = Flask(__name__)\n    app.config.from_object(Config)\n\n    # Registrar blueprints\n    app.register_blueprint(dashboard_bp)\n    app.register_blueprint(shifts_bp)\n    app.register_blueprint(ia_bp)\n    app.register_blueprint(analytics_bp)\n\n    @app.teardown_appcontext\n    def shutdown_session(exception=None):\n        db_session.remove()\n\n    return app\n",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Flask",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.database",
+            "level": 0,
+            "names": [
+                {
+                    "name": "db_session",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.config.config",
+            "level": 0,
+            "names": [
+                {
+                    "name": "Config",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "app.routes",
+            "level": 0,
+            "names": [
+                {
+                    "name": "dashboard_bp",
+                    "asname": null
+                },
+                {
+                    "name": "shifts_bp",
+                    "asname": null
+                },
+                {
+                    "name": "ia_bp",
+                    "asname": null
+                },
+                {
+                    "name": "analytics_bp",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "create_app",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        },
+        {
+            "nombre": "shutdown_session",
+            "lineno": 17,
+            "docstring": null,
+            "decoradores": [
+                "app.teardown_appcontext"
+            ],
+            "argumentos": [
+                "exception"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 7,
+            "targets": [
+                "app"
+            ],
+            "value": "Flask(__name__)"
+        }
+    ]
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestión de Turnos | GTR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/main.min.css' rel='stylesheet' />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/shifts.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Navegación -->
+        <nav class="top-nav glass-effect">
+            <div class="nav-group">
+                <button class="nav-btn active">Todos</button>
+                <button class="nav-btn">Mañana</button>
+                <button class="nav-btn">Tarde</button>
+                <button class="nav-btn">Noche</button>
+                <button class="nav-btn">Especiales</button>
+            </div>
+            <div class="action-group">
+                <button class="action-btn primary">
+                    <i class="fas fa-plus"></i>
+                    Nuevo Turno
+                </button>
+                <button class="action-btn secondary">
+                    <i class="fas fa-exchange-alt"></i>
+                    Gestionar Cambios
+                </button>
+                <button class="action-btn accent">
+                    <i class="fas fa-magic"></i>
+                    Auto-Organizar
+                </button>
+            </div>
+        </nav>
+
+        <!-- Contenedor principal -->
+        <div class="main-content">
+            <!-- Calendario -->
+            <div class="calendar-container glass-effect">
+                <div id="calendar"></div>
+            </div>
+
+            <!-- Panel de turnos -->
+            <div class="shifts-panel glass-effect">
+                <h3>Turnos del día</h3>
+                <div id="dayShifts" class="shifts-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.10/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/main.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="{{ url_for('static', filename='js/shifts.js') }}"></script>
+</body>
+</html> 

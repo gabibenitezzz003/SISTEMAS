@@ -1,0 +1,223 @@
+{
+    "archivo": "dashboard.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\app\\routes\\dashboard.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from flask import jsonify\nfrom app.routes import dashboard_bp\nfrom app.models import DiasNoHabiles, Asesores\nfrom sqlalchemy import func\nfrom datetime import datetime, timedelta\n\n@dashboard_bp.route('/stats')\ndef get_dashboard_stats():\n    # Obtener fecha actual\n    today = datetime.now().date()\n    \n    # Estadísticas generales\n    stats = {\n        'total_asesores': Asesores.query.count(),\n        'com_count': Asesores.query.filter_by(skill='COM').count(),\n        'cross_count': Asesores.query.filter_by(skill='CROSS').count(),\n        'dias_no_habiles_mes': DiasNoHabiles.query.filter(\n            func.extract('month', DiasNoHabiles.fecha) == today.month\n        ).count()\n    }\n    \n    # Datos para gráficos\n    charts_data = {\n        'distribucion_skill': {\n            'labels': ['COM', 'CROSS'],\n            'values': [stats['com_count'], stats['cross_count']]\n        },\n        'turnos_semana': get_weekly_shifts(),\n        'tendencia_mensual': get_monthly_trend()\n    }\n    \n    return jsonify({\n        'stats': stats,\n        'charts': charts_data\n    })\n\ndef get_weekly_shifts():\n    # Obtener turnos de la semana actual\n    today = datetime.now().date()\n    start_of_week = today - timedelta(days=today.weekday())\n    end_of_week = start_of_week + timedelta(days=6)\n    \n    daily_shifts = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha.between(start_of_week, end_of_week)\n    ).all()\n    \n    # Procesar datos para el gráfico\n    days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']\n    shifts_count = [0] * 7\n    \n    for shift in daily_shifts:\n        day_index = shift.fecha.weekday()\n        shifts_count[day_index] += 1\n    \n    return {\n        'labels': days,\n        'values': shifts_count\n    }\n\ndef get_monthly_trend():\n    # Obtener tendencia de los últimos 3 meses\n    today = datetime.now().date()\n    three_months_ago = today - timedelta(days=90)\n    \n    monthly_data = DiasNoHabiles.query.filter(\n        DiasNoHabiles.fecha >= three_months_ago\n    ).all()\n    \n    # Procesar datos por mes\n    months = {}\n    for shift in monthly_data:\n        month_key = shift.fecha.strftime('%Y-%m')\n        months[month_key] = months.get(month_key, 0) + 1\n    \n    # Ordenar por mes\n    sorted_months = sorted(months.items())\n    \n    return {\n        'labels': [m[0] for m in sorted_months],\n        'values': [m[1] for m in sorted_months]\n    } ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "flask",
+            "level": 0,
+            "names": [
+                {
+                    "name": "jsonify",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "app.routes",
+            "level": 0,
+            "names": [
+                {
+                    "name": "dashboard_bp",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "app.models",
+            "level": 0,
+            "names": [
+                {
+                    "name": "DiasNoHabiles",
+                    "asname": null
+                },
+                {
+                    "name": "Asesores",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "from",
+            "module": "sqlalchemy",
+            "level": 0,
+            "names": [
+                {
+                    "name": "func",
+                    "asname": null
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        }
+    ],
+    "clases": [],
+    "funciones": [
+        {
+            "nombre": "get_dashboard_stats",
+            "lineno": 8,
+            "docstring": null,
+            "decoradores": [
+                "dashboard_bp.route('/stats')"
+            ],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_weekly_shifts",
+            "lineno": 37,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        },
+        {
+            "nombre": "get_monthly_trend",
+            "lineno": 60,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": []
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 10,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "stats"
+            ],
+            "value": "{'total_asesores': Asesores.query.count(), 'com_count': Asesores.query.filter_by(skill='COM').count(), 'cross_count': Asesores.query.filter_by(skill='CROSS').count(), 'dias_no_habiles_mes': DiasNoHabiles.query.filter(func.extract('month', DiasNoHabiles.fecha) == today.month).count()}"
+        },
+        {
+            "lineno": 23,
+            "targets": [
+                "charts_data"
+            ],
+            "value": "{'distribucion_skill': {'labels': ['COM', 'CROSS'], 'values': [stats['com_count'], stats['cross_count']]}, 'turnos_semana': get_weekly_shifts(), 'tendencia_mensual': get_monthly_trend()}"
+        },
+        {
+            "lineno": 39,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 40,
+            "targets": [
+                "start_of_week"
+            ],
+            "value": "today - timedelta(days=today.weekday())"
+        },
+        {
+            "lineno": 41,
+            "targets": [
+                "end_of_week"
+            ],
+            "value": "start_of_week + timedelta(days=6)"
+        },
+        {
+            "lineno": 43,
+            "targets": [
+                "daily_shifts"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha.between(start_of_week, end_of_week)).all()"
+        },
+        {
+            "lineno": 48,
+            "targets": [
+                "days"
+            ],
+            "value": "['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']"
+        },
+        {
+            "lineno": 49,
+            "targets": [
+                "shifts_count"
+            ],
+            "value": "[0] * 7"
+        },
+        {
+            "lineno": 52,
+            "targets": [
+                "day_index"
+            ],
+            "value": "shift.fecha.weekday()"
+        },
+        {
+            "lineno": 62,
+            "targets": [
+                "today"
+            ],
+            "value": "datetime.now().date()"
+        },
+        {
+            "lineno": 63,
+            "targets": [
+                "three_months_ago"
+            ],
+            "value": "today - timedelta(days=90)"
+        },
+        {
+            "lineno": 65,
+            "targets": [
+                "monthly_data"
+            ],
+            "value": "DiasNoHabiles.query.filter(DiasNoHabiles.fecha >= three_months_ago).all()"
+        },
+        {
+            "lineno": 70,
+            "targets": [
+                "months"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 72,
+            "targets": [
+                "month_key"
+            ],
+            "value": "shift.fecha.strftime('%Y-%m')"
+        },
+        {
+            "lineno": 73,
+            "targets": [
+                "months[month_key]"
+            ],
+            "value": "months.get(month_key, 0) + 1"
+        },
+        {
+            "lineno": 76,
+            "targets": [
+                "sorted_months"
+            ],
+            "value": "sorted(months.items())"
+        }
+    ]
+}

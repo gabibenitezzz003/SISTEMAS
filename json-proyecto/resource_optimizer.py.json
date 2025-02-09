@@ -1,0 +1,226 @@
+{
+    "archivo": "resource_optimizer.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\resource_optimizer.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from ortools.linear_solver import pywraplp\nimport numpy as np\nfrom datetime import datetime, timedelta\n\nclass ResourceOptimizer:\n    def __init__(self, db_session):\n        self.session = db_session\n        self.solver = pywraplp.Solver.CreateSolver('SCIP')\n        \n    def optimize_resource_allocation(self, period):\n        \"\"\"Optimiza la asignación de recursos para un período\"\"\"\n        # Obtener datos necesarios\n        resources = self.get_available_resources()\n        requirements = self.get_period_requirements(period)\n        constraints = self.get_operational_constraints()\n        \n        # Crear variables de decisión\n        variables = self.create_decision_variables(resources, requirements)\n        \n        # Establecer restricciones\n        self.set_optimization_constraints(variables, constraints)\n        \n        # Definir función objetivo\n        objective = self.define_objective_function(variables)\n        \n        # Resolver\n        solution = self.solve_optimization_problem()\n        \n        return {\n            'optimal_allocation': self.process_solution(solution),\n            'efficiency_metrics': self.calculate_efficiency_metrics(solution),\n            'cost_savings': self.calculate_cost_savings(solution),\n            'implementation_plan': self.generate_implementation_plan(solution)\n        }\n        \n    def create_decision_variables(self, resources, requirements):\n        \"\"\"Crea variables de decisión para el problema de optimización\"\"\"\n        variables = {}\n        \n        for resource in resources:\n            for requirement in requirements:\n                variables[(resource.id, requirement.id)] = self.solver.NumVar(\n                    0, 1, f'assign_{resource.id}_{requirement.id}'\n                )\n                \n        return variables\n        \n    def define_objective_function(self, variables):\n        \"\"\"Define la función objetivo para la optimización\"\"\"\n        objective = self.solver.Objective()\n        \n        for (resource_id, requirement_id), var in variables.items():\n            cost = self.calculate_assignment_cost(resource_id, requirement_id)\n            objective.SetCoefficient(var, cost)\n            \n        objective.SetMinimization()\n        return objective ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "ortools.linear_solver",
+            "level": 0,
+            "names": [
+                {
+                    "name": "pywraplp",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "numpy",
+                    "asname": "np"
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "datetime",
+            "level": 0,
+            "names": [
+                {
+                    "name": "datetime",
+                    "asname": null
+                },
+                {
+                    "name": "timedelta",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "ResourceOptimizer",
+            "lineno": 5,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 6,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "db_session"
+                    ]
+                },
+                {
+                    "nombre": "optimize_resource_allocation",
+                    "lineno": 10,
+                    "docstring": "Optimiza la asignación de recursos para un período",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "period"
+                    ]
+                },
+                {
+                    "nombre": "create_decision_variables",
+                    "lineno": 36,
+                    "docstring": "Crea variables de decisión para el problema de optimización",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "resources",
+                        "requirements"
+                    ]
+                },
+                {
+                    "nombre": "define_objective_function",
+                    "lineno": 48,
+                    "docstring": "Define la función objetivo para la optimización",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "variables"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 6,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "db_session"
+            ]
+        },
+        {
+            "nombre": "optimize_resource_allocation",
+            "lineno": 10,
+            "docstring": "Optimiza la asignación de recursos para un período",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "period"
+            ]
+        },
+        {
+            "nombre": "create_decision_variables",
+            "lineno": 36,
+            "docstring": "Crea variables de decisión para el problema de optimización",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "resources",
+                "requirements"
+            ]
+        },
+        {
+            "nombre": "define_objective_function",
+            "lineno": 48,
+            "docstring": "Define la función objetivo para la optimización",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "variables"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 7,
+            "targets": [
+                "self.session"
+            ],
+            "value": "db_session"
+        },
+        {
+            "lineno": 8,
+            "targets": [
+                "self.solver"
+            ],
+            "value": "pywraplp.Solver.CreateSolver('SCIP')"
+        },
+        {
+            "lineno": 13,
+            "targets": [
+                "resources"
+            ],
+            "value": "self.get_available_resources()"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "requirements"
+            ],
+            "value": "self.get_period_requirements(period)"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "constraints"
+            ],
+            "value": "self.get_operational_constraints()"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "variables"
+            ],
+            "value": "self.create_decision_variables(resources, requirements)"
+        },
+        {
+            "lineno": 24,
+            "targets": [
+                "objective"
+            ],
+            "value": "self.define_objective_function(variables)"
+        },
+        {
+            "lineno": 27,
+            "targets": [
+                "solution"
+            ],
+            "value": "self.solve_optimization_problem()"
+        },
+        {
+            "lineno": 38,
+            "targets": [
+                "variables"
+            ],
+            "value": "{}"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "variables[resource.id, requirement.id]"
+            ],
+            "value": "self.solver.NumVar(0, 1, f'assign_{resource.id}_{requirement.id}')"
+        },
+        {
+            "lineno": 50,
+            "targets": [
+                "objective"
+            ],
+            "value": "self.solver.Objective()"
+        },
+        {
+            "lineno": 53,
+            "targets": [
+                "cost"
+            ],
+            "value": "self.calculate_assignment_cost(resource_id, requirement_id)"
+        }
+    ]
+}

@@ -1,0 +1,351 @@
+{
+    "archivo": "sharepoint_connector.py",
+    "ruta_completa": "C:\\Users\\gabib\\Desktop\\gestor_horarios_GSS-WEB\\utils\\sharepoint_connector.py",
+    "docstring_modulo": null,
+    "contenido_completo": "from office365.runtime.auth.authentication_context import AuthenticationContext\nfrom office365.sharepoint.client_context import ClientContext\nfrom office365.sharepoint.files.file import File\nimport pandas as pd\nimport io\nimport os\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nclass SharePointConnector:\n    def __init__(self):\n        self.sharepoint_url = \"https://atpgsolutions-my.sharepoint.com\"\n        self.file_url = \"/personal/gabriel_benitez_atp_gsolutions_com_ar/_layouts/15/Doc.aspx\"\n        self.file_id = \"0A36F18D-C89F-40E5-AA77-DA9B6D8A74EF\"\n        self.username = os.getenv('SHAREPOINT_USERNAME')\n        self.password = os.getenv('SHAREPOINT_PASSWORD')\n        self.ctx = self.connect()\n        \n    def connect(self):\n        \"\"\"Establece la conexión con SharePoint\"\"\"\n        try:\n            auth = AuthenticationContext(self.sharepoint_url)\n            auth.acquire_token_for_user(self.username, self.password)\n            ctx = ClientContext(self.sharepoint_url, auth)\n            return ctx\n        except Exception as e:\n            print(f\"Error de conexión: {str(e)}\")\n            return None\n\n    def read_dnh_file(self, skill='COM'):\n        \"\"\"Lee el archivo DNH de SharePoint según el skill especificado\"\"\"\n        try:\n            # Construir la URL completa del archivo\n            file_url = f\"{self.file_url}?sourcedoc=%7B{self.file_id}%7D\"\n            response = File.open_binary(self.ctx, file_url)\n            bytes_file_obj = io.BytesIO()\n            bytes_file_obj.write(response.content)\n            bytes_file_obj.seek(0)\n            \n            # Leer la hoja específica según el skill\n            df = pd.read_excel(bytes_file_obj, sheet_name=skill)\n            return df\n        except Exception as e:\n            print(f\"Error leyendo archivo: {str(e)}\")\n            return None\n\n    def update_dnh_file(self, df, skill='COM'):\n        \"\"\"Actualiza la hoja específica del archivo DNH en SharePoint\"\"\"\n        try:\n            # Primero leemos el archivo completo\n            file_url = f\"{self.file_url}?sourcedoc=%7B{self.file_id}%7D\"\n            response = File.open_binary(self.ctx, file_url)\n            bytes_file_obj = io.BytesIO()\n            bytes_file_obj.write(response.content)\n            bytes_file_obj.seek(0)\n            \n            # Leemos todas las hojas\n            excel_file = pd.ExcelFile(bytes_file_obj)\n            writer = pd.ExcelWriter(bytes_file_obj, engine='openpyxl')\n            \n            # Actualizamos la hoja específica y mantenemos las demás\n            for sheet_name in excel_file.sheet_names:\n                if sheet_name == skill:\n                    df.to_excel(writer, sheet_name=sheet_name, index=False)\n                else:\n                    pd.read_excel(excel_file, sheet_name=sheet_name).to_excel(\n                        writer, sheet_name=sheet_name, index=False\n                    )\n            \n            writer.save()\n            bytes_file_obj.seek(0)\n            file_content = bytes_file_obj.getvalue()\n\n            # Actualizar el archivo en SharePoint\n            file = self.ctx.web.get_file_by_server_relative_url(file_url)\n            file.upload(file_content)\n            \n            return True, \"Archivo actualizado correctamente\"\n        except Exception as e:\n            return False, f\"Error actualizando archivo: {str(e)}\"\n\n    def update_cell(self, row_index, column_name, new_value, skill='COM'):\n        \"\"\"Actualiza una celda específica en la hoja del skill especificado\"\"\"\n        try:\n            # Leer la hoja actual\n            df = self.read_dnh_file(skill)\n            if df is None:\n                return False, \"Error leyendo el archivo\"\n\n            # Actualizar el valor\n            df.at[row_index, column_name] = new_value\n\n            # Guardar los cambios\n            return self.update_dnh_file(df, skill)\n        except Exception as e:\n            return False, f\"Error actualizando celda: {str(e)}\" ",
+    "imports": [
+        {
+            "type": "from",
+            "module": "office365.runtime.auth.authentication_context",
+            "level": 0,
+            "names": [
+                {
+                    "name": "AuthenticationContext",
+                    "asname": null
+                }
+            ],
+            "lineno": 1
+        },
+        {
+            "type": "from",
+            "module": "office365.sharepoint.client_context",
+            "level": 0,
+            "names": [
+                {
+                    "name": "ClientContext",
+                    "asname": null
+                }
+            ],
+            "lineno": 2
+        },
+        {
+            "type": "from",
+            "module": "office365.sharepoint.files.file",
+            "level": 0,
+            "names": [
+                {
+                    "name": "File",
+                    "asname": null
+                }
+            ],
+            "lineno": 3
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "pandas",
+                    "asname": "pd"
+                }
+            ],
+            "lineno": 4
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "io",
+                    "asname": null
+                }
+            ],
+            "lineno": 5
+        },
+        {
+            "type": "import",
+            "modules": [
+                {
+                    "module": "os",
+                    "asname": null
+                }
+            ],
+            "lineno": 6
+        },
+        {
+            "type": "from",
+            "module": "dotenv",
+            "level": 0,
+            "names": [
+                {
+                    "name": "load_dotenv",
+                    "asname": null
+                }
+            ],
+            "lineno": 7
+        }
+    ],
+    "clases": [
+        {
+            "nombre": "SharePointConnector",
+            "lineno": 11,
+            "docstring": null,
+            "decoradores": [],
+            "metodos": [
+                {
+                    "nombre": "__init__",
+                    "lineno": 12,
+                    "docstring": null,
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "connect",
+                    "lineno": 20,
+                    "docstring": "Establece la conexión con SharePoint",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self"
+                    ]
+                },
+                {
+                    "nombre": "read_dnh_file",
+                    "lineno": 31,
+                    "docstring": "Lee el archivo DNH de SharePoint según el skill especificado",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "skill"
+                    ]
+                },
+                {
+                    "nombre": "update_dnh_file",
+                    "lineno": 48,
+                    "docstring": "Actualiza la hoja específica del archivo DNH en SharePoint",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "df",
+                        "skill"
+                    ]
+                },
+                {
+                    "nombre": "update_cell",
+                    "lineno": 83,
+                    "docstring": "Actualiza una celda específica en la hoja del skill especificado",
+                    "decoradores": [],
+                    "argumentos": [
+                        "self",
+                        "row_index",
+                        "column_name",
+                        "new_value",
+                        "skill"
+                    ]
+                }
+            ]
+        }
+    ],
+    "funciones": [
+        {
+            "nombre": "__init__",
+            "lineno": 12,
+            "docstring": null,
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "connect",
+            "lineno": 20,
+            "docstring": "Establece la conexión con SharePoint",
+            "decoradores": [],
+            "argumentos": [
+                "self"
+            ]
+        },
+        {
+            "nombre": "read_dnh_file",
+            "lineno": 31,
+            "docstring": "Lee el archivo DNH de SharePoint según el skill especificado",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "skill"
+            ]
+        },
+        {
+            "nombre": "update_dnh_file",
+            "lineno": 48,
+            "docstring": "Actualiza la hoja específica del archivo DNH en SharePoint",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "df",
+                "skill"
+            ]
+        },
+        {
+            "nombre": "update_cell",
+            "lineno": 83,
+            "docstring": "Actualiza una celda específica en la hoja del skill especificado",
+            "decoradores": [],
+            "argumentos": [
+                "self",
+                "row_index",
+                "column_name",
+                "new_value",
+                "skill"
+            ]
+        }
+    ],
+    "asignaciones": [
+        {
+            "lineno": 13,
+            "targets": [
+                "self.sharepoint_url"
+            ],
+            "value": "'https://atpgsolutions-my.sharepoint.com'"
+        },
+        {
+            "lineno": 14,
+            "targets": [
+                "self.file_url"
+            ],
+            "value": "'/personal/gabriel_benitez_atp_gsolutions_com_ar/_layouts/15/Doc.aspx'"
+        },
+        {
+            "lineno": 15,
+            "targets": [
+                "self.file_id"
+            ],
+            "value": "'0A36F18D-C89F-40E5-AA77-DA9B6D8A74EF'"
+        },
+        {
+            "lineno": 16,
+            "targets": [
+                "self.username"
+            ],
+            "value": "os.getenv('SHAREPOINT_USERNAME')"
+        },
+        {
+            "lineno": 17,
+            "targets": [
+                "self.password"
+            ],
+            "value": "os.getenv('SHAREPOINT_PASSWORD')"
+        },
+        {
+            "lineno": 18,
+            "targets": [
+                "self.ctx"
+            ],
+            "value": "self.connect()"
+        },
+        {
+            "lineno": 23,
+            "targets": [
+                "auth"
+            ],
+            "value": "AuthenticationContext(self.sharepoint_url)"
+        },
+        {
+            "lineno": 25,
+            "targets": [
+                "ctx"
+            ],
+            "value": "ClientContext(self.sharepoint_url, auth)"
+        },
+        {
+            "lineno": 35,
+            "targets": [
+                "file_url"
+            ],
+            "value": "f'{self.file_url}?sourcedoc=%7B{self.file_id}%7D'"
+        },
+        {
+            "lineno": 36,
+            "targets": [
+                "response"
+            ],
+            "value": "File.open_binary(self.ctx, file_url)"
+        },
+        {
+            "lineno": 37,
+            "targets": [
+                "bytes_file_obj"
+            ],
+            "value": "io.BytesIO()"
+        },
+        {
+            "lineno": 42,
+            "targets": [
+                "df"
+            ],
+            "value": "pd.read_excel(bytes_file_obj, sheet_name=skill)"
+        },
+        {
+            "lineno": 52,
+            "targets": [
+                "file_url"
+            ],
+            "value": "f'{self.file_url}?sourcedoc=%7B{self.file_id}%7D'"
+        },
+        {
+            "lineno": 53,
+            "targets": [
+                "response"
+            ],
+            "value": "File.open_binary(self.ctx, file_url)"
+        },
+        {
+            "lineno": 54,
+            "targets": [
+                "bytes_file_obj"
+            ],
+            "value": "io.BytesIO()"
+        },
+        {
+            "lineno": 59,
+            "targets": [
+                "excel_file"
+            ],
+            "value": "pd.ExcelFile(bytes_file_obj)"
+        },
+        {
+            "lineno": 60,
+            "targets": [
+                "writer"
+            ],
+            "value": "pd.ExcelWriter(bytes_file_obj, engine='openpyxl')"
+        },
+        {
+            "lineno": 73,
+            "targets": [
+                "file_content"
+            ],
+            "value": "bytes_file_obj.getvalue()"
+        },
+        {
+            "lineno": 76,
+            "targets": [
+                "file"
+            ],
+            "value": "self.ctx.web.get_file_by_server_relative_url(file_url)"
+        },
+        {
+            "lineno": 87,
+            "targets": [
+                "df"
+            ],
+            "value": "self.read_dnh_file(skill)"
+        },
+        {
+            "lineno": 92,
+            "targets": [
+                "df.at[row_index, column_name]"
+            ],
+            "value": "new_value"
+        }
+    ]
+}
